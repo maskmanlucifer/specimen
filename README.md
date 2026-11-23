@@ -49,14 +49,16 @@ These values are public by design. Secrets (the Google client secret and the tok
 
 ## Deploy
 
-`.github/workflows/pages.yml` builds the app and the static pages and deploys them to GitHub Pages:
+```sh
+pnpm deploy         # builds, then pushes the site to the gh-pages branch
+```
 
 | Path | Content |
 |---|---|
 | `/specimen/` | The home page, privacy and terms (`site/`) |
 | `/specimen/app/` | The app (`apps/web`) |
 
-Set the three `VITE_…` values above as repository **variables** (Settings → Secrets and variables → Actions → Variables).
+The build reads the `VITE_…` values from `apps/web/.env.local`.
 
 ## Repository layout
 

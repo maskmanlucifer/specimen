@@ -13,6 +13,10 @@
     "dev": "pnpm --filter @specimen/web dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "deploy": "pnpm build && rm -rf _site && mkdir -p _site/app && cp -R site/. _site/ && cp -R apps/web/dist/. _site/app/ && gh-pages -d _site --nojekyll"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
