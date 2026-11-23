@@ -64,6 +64,12 @@ function Permissions({ onBack }: { onBack: () => void }) {
         </ul>
         <p className="mono muted">Scope requested: drive.file · Revoke any time at myaccount.google.com/permissions</p>
       </div>
+      <p className="ob-note">
+        <Icon name="alert" size={14} />
+        <span>
+          On Google’s screen, <strong>tick the Google Drive box</strong> (“See, edit, create, and delete only the specific Google Drive files you use with this app”). It starts unticked, and Specimen cannot save without it.
+        </span>
+      </p>
       <div className="ob-actions">
         <Button onClick={onBack}>Back</Button>
         <Button

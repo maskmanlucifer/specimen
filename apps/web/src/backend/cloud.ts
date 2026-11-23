@@ -14,6 +14,10 @@ export interface CloudConfig {
 }
 
 const KEY = 'specimen-cloud';
+/** Shown when the user signed in but did not allow Drive access on Google's screen. */
+export const NO_DRIVE = 'Specimen did not get access to Google Drive. Sign in again and tick the Google Drive box on Google’s screen.';
+/** sessionStorage key for a sign-in problem to show after the page reloads. */
+export const AUTH_ERROR = 'specimen-auth-error';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 /** The config pasted in Settings, else the one built into this deployment, else none. */
@@ -71,8 +75,10 @@ let token: { value: string; until: number } | null = null;
 async function tokenCall(body: Record<string, unknown>) {
   const sb = supabase();
   if (!sb) throw new ReconnectError('Not signed in');
-  const { data, error } = await sb.functions.invoke<{ access_token?: string; expires_in?: number; error?: string }>('drive-token', { body });
+  const { data, error } = await sb.functions.invoke<{ access_token?: string; expires_in?: number; scope?: string; error?: string }>('drive-token', { body });
   if (error || !data?.access_token) throw new ReconnectError('Google Drive access expired. Sign in with Google again.');
+  // Google shows Drive access as a checkbox that starts unticked; without it no Drive call works.
+  if (data.scope && !data.scope.includes(DRIVE_SCOPE)) throw new ReconnectError(NO_DRIVE);
   token = { value: data.access_token, until: Date.now() + ((data.expires_in ?? 3600) - 120) * 1000 };
   return token.value;
 }
@@ -87,7 +93,14 @@ export async function cloudSession(): Promise<SbSession | null> {
   const { data } = await sb.auth.getSession();
   const s = data.session;
   if (s?.provider_refresh_token && localStorage.getItem('specimen-rt') !== s.user.id + s.provider_refresh_token.slice(-6)) {
-    await tokenCall({ refresh_token: s.provider_refresh_token });
+    try {
+      await tokenCall({ refresh_token: s.provider_refresh_token });
+    } catch (e) {
+      // A sign-in without Drive access is no use: undo it and explain why on the next screen.
+      sessionStorage.setItem(AUTH_ERROR, (e as Error).message);
+      await disconnectGoogle();
+      return null;
+    }
     localStorage.setItem('specimen-rt', s.user.id + s.provider_refresh_token.slice(-6));
     if (s.provider_token) token = { value: s.provider_token, until: Date.now() + 50 * 60 * 1000 };
   }

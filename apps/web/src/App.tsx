@@ -4,6 +4,8 @@ import { Toasts } from './components/Toasts';
 import { Spinner } from './components/ui';
 import { useTheme } from './lib/theme';
 import { useSession } from './store/session';
+import { toast } from './store/toast';
+import { AUTH_ERROR } from './backend/cloud';
 
 const Landing = lazy(() => import('./pages/Landing'));
 const SignIn = lazy(() => import('./pages/SignIn'));
@@ -50,6 +52,11 @@ export function App() {
     load().then((session) => {
       // Back from Google: drop `?code=` from the address and go where sign-in started.
       if (location.search) history.replaceState(null, '', location.pathname + location.hash);
+      const problem = sessionStorage.getItem(AUTH_ERROR);
+      if (problem) {
+        sessionStorage.removeItem(AUTH_ERROR);
+        toast(problem);
+      }
       const next = sessionStorage.getItem('specimen-next');
       if (next && session?.authMode === 'hosted') {
         sessionStorage.removeItem('specimen-next');
