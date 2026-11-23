@@ -7,7 +7,6 @@ import { useSession } from './store/session';
 import { toast } from './store/toast';
 import { AUTH_ERROR } from './backend/cloud';
 
-const Landing = lazy(() => import('./pages/Landing'));
 const SignIn = lazy(() => import('./pages/SignIn'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -69,7 +68,6 @@ export function App() {
     <Suspense fallback={<Loading />}>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/about" element={<Landing />} />
         <Route path="/s/:id" element={<SharedPage />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/onboarding" element={<Private><Onboarding /></Private>} />

@@ -18,7 +18,7 @@ A board is a folder in your storage:
 | `format` | Format version. It is `1` now. |
 | `title`, `dek`, `author` | The story title, the lead paragraph and the byline. |
 | `visibility` | `draft`, `published` or `unlisted`. |
-| `rev` | Revision number. The server increases it for each save. A save from an older revision gets a conflict. |
+| `rev` | Revision number. The app increases it for each save. A save from an older revision gets a conflict. |
 | `sections` | Areas on the canvas: `id`, `title`, `x`, `y`, `w`, `h` and an optional `intro`. |
 | `cards` | The cards. See the types below. |
 | `links` | Connections between cards: `from`, `to` and an optional `label`. |

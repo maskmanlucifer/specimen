@@ -20,9 +20,11 @@ Time: about 10 minutes. Cost: the free plans of Supabase and Google Cloud are en
 1. In Supabase, select **New project**. Pick the region nearest to you.
 2. Open **Project Settings → API**. Copy these two values:
    - **Project URL**, for example `https://abcd1234.supabase.co`
-   - **anon public** key (also called the publishable key)
+   - the **publishable** key (`sb_publishable_…`; older projects call it the **anon public** key)
 
-Do not copy the `service_role` key. Specimen never needs it.
+Do not copy the secret (`service_role`) key. Specimen never needs it.
+
+You can turn off **Grant API access to new tables automatically** when you create the project. The migration grants the one table it needs.
 
 ## 2. Create the Google OAuth client
 
@@ -61,6 +63,10 @@ npx supabase secrets set \
   TOKEN_KEY=$(openssl rand -base64 32)
 ```
 
+Then open **Edge Functions → drive-token → Settings** and turn **Verify JWT with legacy secret** off. The function checks the signed-in user itself, and the legacy check can reject sign-ins on projects that use the new API keys.
+
+No CLI? Every step also works in the dashboard: paste the migration into the **SQL editor**, create the function with **Deploy a new function → Via Editor**, and add the three values under **Edge Functions → Secrets**.
+
 `TOKEN_KEY` encrypts the stored refresh tokens. Keep it only in Supabase secrets. If you lose it, each person signs in with Google again. Nothing else is lost.
 
 ## 5. Connect Specimen
@@ -68,6 +74,7 @@ npx supabase secrets set \
 1. Open Specimen. Go to **Settings → Storage → Your Supabase project → Set up**.
 2. Paste the Project URL and the anon key. Paste the Google API key if you made one.
 3. Select **Add Google Drive**, then **Continue with Google**.
+4. On Google's screen, **tick the Google Drive box**. Google shows it unticked. Without it Specimen cannot save, and the app asks you to sign in again.
 
 New boards now go to `My Drive/Specimen/`. To move an older board from this browser to Drive, open the board, select **Publish**, then **Move it to Google Drive**.
 
