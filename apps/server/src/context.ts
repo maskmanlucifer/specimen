@@ -2,6 +2,7 @@ import type { Auth } from './auth';
 import type { Boards } from './boards';
 import type { Config } from './config';
 import type { Plugins } from './plugins';
+import type { Publisher } from './publish';
 import type { StorageRegistry } from './storage/registry';
 import type { Store } from './store';
 
@@ -13,4 +14,5 @@ export interface Ctx {
   storages: StorageRegistry;
   boards: Boards;
   plugins: Plugins;
+  publisher: Publisher;
 }

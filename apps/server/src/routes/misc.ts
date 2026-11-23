@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { PluginBundle, Settings } from '@specimen/schema';
+import { cardText, CARD_LABEL, type PluginBundle, type Settings } from '@specimen/schema';
 import type { AppEnv } from '../auth';
 import type { Ctx } from '../context';
 
@@ -53,6 +53,26 @@ export function miscRoutes(ctx: Ctx) {
       s.onboarded = true;
     });
     return c.json({ ok: true });
+  });
+
+  /** Searches card text, transcripts and code across every board (⌘K on the dashboard). */
+  app.get('/search', async (c) => {
+    const q = (c.req.query('q') ?? '').trim().toLowerCase();
+    if (q.length < 2) return c.json([]);
+    const { boards } = await ctx.boards.list();
+    const hits: { storageId: string; slug: string; board: string; cardId?: string; label: string; text: string }[] = [];
+    await Promise.all(
+      boards.map(async (s) => {
+        if (s.title.toLowerCase().includes(q)) hits.push({ storageId: s.storageId, slug: s.slug, board: s.title, label: 'Board', text: s.title });
+        const b = await ctx.boards.get(s.storageId, s.slug).catch(() => null);
+        for (const card of b?.cards ?? []) {
+          const text = cardText(card);
+          const i = text.toLowerCase().indexOf(q);
+          if (i >= 0) hits.push({ storageId: s.storageId, slug: s.slug, board: s.title, cardId: card.id, label: CARD_LABEL[card.type], text: text.slice(Math.max(0, i - 30), i + 70) });
+        }
+      }),
+    );
+    return c.json(hits.slice(0, 40));
   });
 
   app.get('/activity', async (c) => c.json((await ctx.store.read()).activity.slice(0, 12)));

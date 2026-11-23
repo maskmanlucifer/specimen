@@ -10,9 +10,11 @@ import { loadConfig } from './config';
 import type { Ctx } from './context';
 import { initKey } from './crypto';
 import { Plugins } from './plugins';
+import { Publisher } from './publish';
 import { authRoutes } from './routes/auth';
 import { boardRoutes } from './routes/boards';
 import { miscRoutes } from './routes/misc';
+import { publishRoutes, shareRoutes } from './routes/publish';
 import { storageRoutes } from './routes/storage';
 import { StorageRegistry } from './storage/registry';
 import { Store } from './store';
@@ -24,7 +26,8 @@ export async function createApp(cfg = loadConfig()) {
   const storages = new StorageRegistry(store, cfg);
   await storages.ensureDefault();
   const boards = new Boards(storages);
-  const ctx: Ctx = { cfg, store, auth: new Auth(store, cfg), storages, boards, plugins: new Plugins(cfg.pluginsDir, storages, boards) };
+  const plugins = new Plugins(cfg.pluginsDir, storages, boards);
+  const ctx: Ctx = { cfg, store, auth: new Auth(store, cfg), storages, boards, plugins, publisher: new Publisher(cfg, store, storages, boards, plugins) };
 
   const app = new Hono<AppEnv>();
   if (process.env.NODE_ENV !== 'test') app.use('/api/*', logger());
@@ -35,7 +38,9 @@ export async function createApp(cfg = loadConfig()) {
   api.route('/storages', storageRoutes(ctx));
   api.route('/boards', boardRoutes(ctx));
   api.route('/', miscRoutes(ctx));
+  api.route('/', publishRoutes(ctx));
   app.route('/api', api);
+  app.route('/', shareRoutes(ctx));
 
   app.onError((err, c) => {
     if (err instanceof HTTPException) return err.getResponse();

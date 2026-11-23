@@ -12,15 +12,20 @@
   "dependencies": {
     "@hono/node-server": "^1.19.19",
     "@specimen/schema": "workspace:*",
+    "@specimen/story": "workspace:*",
     "aws4fetch": "^1.0.20",
     "fflate": "~0.8.3",
     "hono": "^4.13.20",
     "nodemailer": "^6.10.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
     "@types/nodemailer": "^6.4.24",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"
   }
