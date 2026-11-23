@@ -321,45 +321,56 @@ export function Recorder({ open, onClose, onDone }: { open: boolean; onClose: ()
     r.stop();
   };
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+  const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const ss = String(Math.floor(elapsed % 60)).padStart(2, '0');
+  const cs = String(Math.floor((elapsed % 1) * 100)).padStart(2, '0');
+  const togglePause = () => {
+    if (rec.current?.state === 'recording') {
+      rec.current.pause();
+      setState('paused');
+    } else if (rec.current?.state === 'paused') {
+      rec.current.resume();
+      setState('recording');
+    }
+  };
   return (
-    <Dialog open={open} onClose={onClose} label="Record audio" width={520}>
-      <div className="rec">
-        <div className="rec-head">
-          <Label tone={state === 'recording' ? 'hot' : undefined}>{state === 'error' ? 'Microphone blocked' : state === 'paused' ? 'Paused' : '● Recording'}</Label>
-          <span className="mono muted">48 kHz · mono</span>
-        </div>
-        <div className="rec-time display">{`${Math.floor(elapsed / 60)}:${String(Math.floor(elapsed % 60)).padStart(2, '0')}.${Math.floor((elapsed % 1) * 10)}`}</div>
-        <div className="rec-wave" aria-hidden>
-          {levels.map((l, i) => (
-            <i key={i} style={{ height: `${Math.max(4, l * 100)}%` }} />
-          ))}
-        </div>
-        {state === 'error' && <p className="panel-muted">Allow microphone access in your browser, then try again.</p>}
-        <p className="mono muted">{device}</p>
-        <div className="rec-actions">
-          <Button onClick={onClose}>Discard</Button>
-          <Button
-            onClick={() => {
-              if (rec.current?.state === 'recording') {
-                rec.current.pause();
-                setState('paused');
-              } else if (rec.current?.state === 'paused') {
-                rec.current.resume();
-                setState('recording');
-              }
-            }}
-            disabled={state === 'error'}
-          >
-            {state === 'paused' ? 'Resume' : 'Pause'}
-          </Button>
-          <Button variant="primary" onClick={stop} disabled={state === 'error' || elapsed < 0.5}>
-            Stop and add card
-          </Button>
-        </div>
-        <p className="mono muted rec-path">
-          Saves to {storage?.name} › {storage?.root}/{slug}/media/{stamp()}.{rec.current ? ext() : 'm4a'}
-        </p>
+    <div className="rec-sheet" role="dialog" aria-label="Record audio">
+      <div className="rec-top">
+        <span className={cx('rec-dot', state === 'recording' && 'is-live')} />
+        <strong>{state === 'error' ? 'Microphone blocked' : state === 'paused' ? 'Paused' : 'Listening'}</strong>
+        <button type="button" className="panel-x rec-discard" aria-label="Discard recording" title="Discard" onClick={onClose}>
+          <Icon name="x" size={14} />
+        </button>
       </div>
-    </Dialog>
+      <p className="rec-sub">{state === 'error' ? 'Allow microphone access in your browser, then try again.' : 'Speak freely. The clip becomes an audio card on this board.'}</p>
+      <div className="rec-wave" aria-hidden>
+        {levels.map((l, i) => (
+          <i key={i} style={{ height: `${Math.max(6, l * 100)}%` }} />
+        ))}
+      </div>
+      <div className="rec-row">
+        <span className="rec-time mono">
+          {mm}:{ss}
+          <small>{cs}</small>
+        </span>
+        <button type="button" className="rec-pill" onClick={togglePause} disabled={state === 'error'} aria-label={state === 'paused' ? 'Resume' : 'Pause'}>
+          <Icon name={state === 'paused' ? 'play' : 'pause'} size={13} />
+        </button>
+        <button type="button" className="rec-pill rec-stop" onClick={stop} disabled={state === 'error' || elapsed < 0.5}>
+          <i /> Stop and add
+        </button>
+      </div>
+      <p className="rec-meta mono">
+        {device} · 48 kHz · mono → {storage?.root}/{slug}/media/{stamp()}.{rec.current ? ext() : 'm4a'}
+      </p>
+    </div>
   );
 }

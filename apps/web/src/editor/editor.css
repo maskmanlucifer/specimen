@@ -948,41 +948,131 @@
   justify-content: flex-end;
 }
 
-/* ---------- Recorder ---------- */
-.rec {
-  padding: 24px;
-  display: grid;
-  gap: 12px;
+/* ---------- Recorder sheet ---------- */
+/* Rises from the toolbar like a voice-memo sheet; the canvas stays usable behind it. */
+.rec-sheet {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  z-index: 7;
+  width: 420px;
+  margin-left: -210px;
+  padding: 18px 18px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-outer);
+  background: var(--surface);
+  box-shadow: 0 24px 48px -18px rgb(26 26 26 / 0.35);
+  animation: sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
 }
-.rec-head {
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+.rec-top {
   display: flex;
-  justify-content: space-between;
-  font-size: 11px;
+  align-items: center;
+  gap: 9px;
+  font: 500 16px var(--font-display);
+  letter-spacing: -0.01em;
 }
-.rec-time {
-  font-size: 56px;
-  line-height: 1;
+.rec-discard {
+  margin-left: auto;
+}
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+.rec-dot.is-live {
+  background: var(--hot);
+  animation: rec-pulse 1.2s ease-in-out infinite;
+}
+@keyframes rec-pulse {
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--hot) 20%, transparent);
+  }
+}
+.rec-sub {
+  margin: 4px 0 14px;
+  font-size: 13px;
+  color: var(--muted);
 }
 .rec-wave {
-  height: 72px;
+  height: 48px;
   display: flex;
   align-items: center;
   gap: 2px;
+  margin-bottom: 14px;
 }
 .rec-wave i {
   flex: 1;
-  background: var(--hot);
-  border-radius: var(--r-inset);
   min-height: 2px;
+  border-radius: 1px;
+  background: var(--hot);
+  opacity: 0.85;
 }
-.rec-actions {
+.rec-row {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
 }
-.rec-path {
+.rec-time {
+  margin-right: auto;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.rec-time small {
+  margin-left: 2px;
+  font-size: 16px;
+  color: var(--faint);
+}
+.rec-pill {
+  all: unset;
+  cursor: pointer;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font: 500 13px var(--font-ui);
+  color: var(--ink);
+}
+.rec-pill:hover:not(:disabled) {
+  border-color: var(--line-2);
+}
+.rec-pill:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.rec-stop {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.rec-stop i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--hot);
+}
+.rec-meta {
+  margin: 12px 0 0;
   font-size: 10.5px;
-  margin: 0;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- Log ---------- */
@@ -1340,4 +1430,58 @@
 }
 .card--link .ui-working {
   margin-bottom: 8px;
+}
+
+/* ---------- Share-link row ---------- */
+.pub-done p {
+  margin: -6px 0 2px;
+  font-size: 13.5px;
+}
+.pub-share {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 6px 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.pub-share-url {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink);
+}
+.pub-share-copy {
+  all: unset;
+  cursor: pointer;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r-inner);
+  background: var(--ink);
+  color: var(--paper);
+  font: 500 12.5px var(--font-ui);
+  display: inline-flex;
+  align-items: center;
+}
+.pub-share-vis {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-inner);
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 12.5px var(--font-ui);
+}
+.pub-done .pub-actions {
+  justify-content: flex-end;
+}
+/* Grid children may shrink below their content, so long URLs truncate instead of overflowing. */
+.pub > * {
+  min-width: 0;
 }

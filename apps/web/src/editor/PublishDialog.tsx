@@ -84,11 +84,11 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const publish = async () => {
+  const publish = async (vis: 'published' | 'unlisted' = visibility) => {
     setBusy(true);
     try {
       await flush();
-      const res = await api.publish(storageId, slug, { via: mode === 'share' ? 'share' : host!.id, visibility, domain: domain || undefined });
+      const res = await api.publish(storageId, slug, { via: mode === 'share' ? 'share' : host!.id, visibility: vis, domain: domain || undefined });
       setResult(res.url);
       await load(storageId, slug);
     } catch (e) {
@@ -115,15 +115,35 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
     return (
       <Dialog open onClose={onClose} label="Published" width={560}>
         <div className="pub pub-done">
-          <Label tone="accent">Published · {visibility}</Label>
+          <Label tone="accent">Published</Label>
           <h2 className="display">
             It's <em>live</em>
           </h2>
-          <div className="pub-url mono">{result}</div>
+          <p className="muted">Anyone with the link can read it{visibility === 'published' ? ', and it is listed on your profile' : ''}.</p>
+          <div className="pub-share">
+            <Icon name="link" size={15} />
+            <span className="mono pub-share-url" title={result}>
+              {result}
+            </span>
+            <button type="button" className="pub-share-copy" onClick={() => navigator.clipboard.writeText(result).then(() => toast('Link copied'))}>
+              Copy
+            </button>
+            <select
+              className="pub-share-vis"
+              value={visibility}
+              aria-label="Who can find it"
+              disabled={busy}
+              onChange={(e) => {
+                const v = e.target.value as 'published' | 'unlisted';
+                setVisibility(v);
+                publish(v);
+              }}
+            >
+              <option value="unlisted">Anyone with link</option>
+              <option value="published">Public, listed</option>
+            </select>
+          </div>
           <div className="pub-actions">
-            <Button icon="copy" onClick={() => navigator.clipboard.writeText(result).then(() => toast('Link copied'))}>
-              Copy link
-            </Button>
             {/^https?:/.test(result) && (
               <Button icon="external" onClick={() => window.open(result, '_blank', 'noopener')}>
                 Open
@@ -299,7 +319,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
           </Button>
           <div className="pub-foot-r">
             <Button onClick={() => nav(`/b/${storageId}/${slug}/preview`)}>Preview as reader</Button>
-            <Button variant="primary" onClick={publish} disabled={busy || (mode === 'host' && !host)}>
+            <Button variant="primary" onClick={() => publish()} disabled={busy || (mode === 'host' && !host)}>
               {busy ? <Working label="Publishing" /> : mode === 'share' ? 'Publish share link' : `Publish to ${def.label}`}
             </Button>
           </div>
