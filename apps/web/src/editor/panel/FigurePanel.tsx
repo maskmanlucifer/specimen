@@ -113,7 +113,7 @@ export function FigurePanel({ card }: { card: CardOf<'figure'> }) {
                 .filter((c) => inp.accepts.includes(c.type))
                 .map((c) => (
                   <option key={c.id} value={c.id}>
-                    {CARD_LABEL[c.type]}: {cardText(c).slice(0, 40)}
+                    {CARD_LABEL[c.type]}: {('title' in c && c.title) || cardText(c).slice(0, 40)}
                   </option>
                 ))}
             </select>

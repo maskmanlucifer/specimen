@@ -272,7 +272,8 @@ export function CardBody({ card, board, figureNo }: { card: Card; board: Board; 
   }
 }
 
-function ImageOrHatch({ src, name, alt }: { src?: string; name?: string; alt: string }) {
+/** The image, or a hatched plate with its file name when it is missing or fails to load. */
+export function ImageOrHatch({ src, name, alt }: { src?: string; name?: string; alt: string }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) return <Hatch label={name} />;
   return <img className="card-img" src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />;

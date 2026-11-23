@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { CARD_LABEL, cardText, formatBytes, type Card, type CardOf, type Section } from '@specimen/schema';
-import { TeX } from '@specimen/story';
-import { Button, Field, Icon, Label, StorageBadge, Toggle } from '../../components/ui';
+import { TeX, useMedia } from '@specimen/story';
+import { Field, Icon, Label, StorageBadge, Toggle } from '../../components/ui';
 import { useBoard } from '../../store/board';
+import { ImageOrHatch } from '../cards/CardBody';
 import { AudioPanel } from './AudioPanel';
 import { FigurePanel } from './FigurePanel';
 import './panel.css';
@@ -41,6 +42,7 @@ export function LazyText({ value, onCommit, multiline, mono, placeholder, rows =
 
 function TypeEditor({ card }: { card: Card }) {
   const update = useBoard((s) => s.updateCard);
+  const media = useMedia();
   const set = (patch: Partial<Card>) => update(card.id, patch, `Edited ${card.type}`);
   switch (card.type) {
     case 'note':
@@ -82,6 +84,9 @@ function TypeEditor({ card }: { card: Card }) {
     case 'image':
       return (
         <>
+          <div className="panel-media">
+            <ImageOrHatch src={media(card.src)} name={card.src.split('/').pop()} alt={card.alt ?? ''} />
+          </div>
           <Field label="Caption">
             <LazyText value={card.caption ?? ''} onCommit={(caption) => set({ caption: caption || undefined } as Partial<CardOf<'image'>>)} />
           </Field>
@@ -190,7 +195,6 @@ function Connections({ id }: { id: string }) {
 function SectionPanel({ section }: { section: Section }) {
   const update = useBoard((s) => s.updateSection);
   const board = useBoard((s) => s.board)!;
-  const removeIds = useBoard((s) => s.removeIds);
   return (
     <>
       <div className="panel-body">
@@ -204,12 +208,21 @@ function SectionPanel({ section }: { section: Section }) {
           <p className="panel-muted">{board.cards.filter((c) => c.sectionId === section.id).length} cards. Set the reading order in Publish → Reading order.</p>
         </PanelSection>
       </div>
-      <div className="panel-foot">
-        <Button variant="danger" size="sm" icon="trash" onClick={() => removeIds([section.id])}>
-          Remove section (keeps cards)
-        </Button>
-      </div>
     </>
+  );
+}
+
+/** Header actions: small icon buttons, destructive one first so Close stays in the corner. */
+function HeadActions({ onDelete, deleteLabel, onClose }: { onDelete: () => void; deleteLabel: string; onClose: () => void }) {
+  return (
+    <span className="panel-actions">
+      <button type="button" className="panel-icon panel-icon--danger" aria-label={deleteLabel} title={deleteLabel} onClick={onDelete}>
+        <Icon name="trash" size={15} />
+      </button>
+      <button type="button" className="panel-icon" aria-label="Close" title="Close (Esc)" onClick={onClose}>
+        <Icon name="x" size={15} />
+      </button>
+    </span>
   );
 }
 
@@ -228,9 +241,7 @@ export function SidePanel({ id, onClose }: { id: string; onClose: () => void }) 
       <aside className="panel" aria-label="Section">
         <div className="panel-head">
           <Label>Section · {sectionNo}</Label>
-          <button type="button" className="panel-close" aria-label="Close" onClick={onClose}>
-            <Icon name="x" />
-          </button>
+          <HeadActions deleteLabel="Remove section (keeps its cards)" onDelete={() => removeIds([section.id])} onClose={onClose} />
         </div>
         <SectionPanel section={section} />
       </aside>
@@ -240,12 +251,10 @@ export function SidePanel({ id, onClose }: { id: string; onClose: () => void }) 
   return (
     <aside className="panel" aria-label={`${CARD_LABEL[card.type]} card`}>
       <div className="panel-head">
-        <Label>
+        <Label className="panel-crumb">
           {CARD_LABEL[card.type]} card{section ? ` · ${sectionNo} · ${section.title}` : ''}
         </Label>
-        <button type="button" className="panel-close" aria-label="Close" onClick={onClose}>
-          <Icon name="x" />
-        </button>
+        <HeadActions deleteLabel="Delete card" onDelete={() => removeIds([card.id])} onClose={onClose} />
       </div>
       <div className="panel-body">
         <TypeEditor card={card} />
@@ -274,25 +283,15 @@ export function SidePanel({ id, onClose }: { id: string; onClose: () => void }) 
           </label>
         </PanelSection>
       </div>
-      <div className="panel-foot">
-        {'src' in card && !/^https?:/.test(card.src) && (
-          <span className="panel-file mono">
-            {card.src}
+      {(('src' in card && !/^https?:/.test(card.src)) || card.type === 'figure') && (
+        <div className="panel-foot">
+          {storage && <StorageBadge kind={storage.kind} />}
+          <span className="panel-file mono" title={'src' in card ? card.src : undefined}>
+            {'src' in card ? card.src : `plugins/${card.plugin}@${board.plugins[card.plugin] ?? 'latest'}`}
             {'size' in card && card.size ? ` · ${formatBytes(card.size)}` : ''}
           </span>
-        )}
-        {card.type === 'figure' && <span className="panel-file mono">plugins/{card.plugin}@{board.plugins[card.plugin] ?? 'latest'}</span>}
-        {storage && (
-          <span className="panel-store">
-            <StorageBadge kind={storage.kind} /> {storage.name}
-          </span>
-        )}
-      </div>
-      <div className="panel-foot">
-        <Button variant="danger" size="sm" icon="trash" onClick={() => removeIds([card.id])}>
-          Delete card
-        </Button>
-      </div>
+        </div>
+      )}
     </aside>
   );
 }
