@@ -184,11 +184,11 @@ textarea.sr-input {
 .sr-x {
   all: unset;
   cursor: pointer;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
-  border-radius: var(--r-inset);
+  border-radius: var(--r-inner);
   color: var(--faint);
 }
 .sr-x:hover {

@@ -18,7 +18,7 @@
 
 /* ---------- Top bar ---------- */
 .bbar {
-  height: 56px;
+  height: 52px;
   flex: none;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
@@ -28,18 +28,6 @@
   border-bottom: 1px solid var(--line);
   background: var(--paper);
   z-index: 5;
-}
-.bbar-back {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--r-inner);
-  color: var(--muted);
-}
-.bbar-back:hover {
-  background: var(--surface-2);
-  color: var(--ink);
 }
 .bbar-title {
   min-width: 0;
@@ -87,9 +75,9 @@
   margin-left: 4px;
 }
 .bbar-search {
-  flex: 0 1 224px;
+  flex: 0 1 220px;
   margin: 0;
-  height: 40px;
+  height: 32px;
 }
 
 /* ---------- Canvas ---------- */
@@ -631,21 +619,21 @@
 /* ---------- Bottom controls ---------- */
 .zoom {
   position: absolute;
-  left: 20px;
-  bottom: 20px;
+  left: 16px;
+  bottom: 16px;
   z-index: 5;
   display: flex;
   align-items: center;
-  height: 40px;
+  height: 32px;
   border: 1px solid var(--line);
-  border-radius: var(--r-card);
+  border-radius: var(--r-inner);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
 .zoom button {
   all: unset;
   cursor: pointer;
-  min-width: 32px;
+  min-width: 28px;
   height: 100%;
   display: grid;
   place-items: center;
@@ -653,8 +641,8 @@
   color: var(--ink-2);
 }
 .zoom .mono {
-  font-size: 11.5px;
-  min-width: 48px;
+  font-size: 11px;
+  min-width: 44px;
 }
 .tb {
   --tb-bg: #1a1a1a;
@@ -664,14 +652,14 @@
   --tb-chip: #2e2a25;
   position: absolute;
   left: 50%;
-  bottom: 22px;
+  bottom: 16px;
   transform: translateX(-50%);
   z-index: 6;
   display: flex;
   align-items: center;
   gap: 2px;
-  height: 52px;
-  padding: 0 6px;
+  height: 44px;
+  padding: 0 5px;
   border-radius: 999px;
   background: var(--tb-bg);
   color: var(--tb-ink);
@@ -688,8 +676,8 @@
   all: unset;
   cursor: pointer;
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
@@ -700,21 +688,20 @@
   color: var(--tb-ink);
   background: var(--tb-hover);
 }
-/* The active tool lifts out of the bar, like a marker picked up from a tray. */
+/* The active tool is "picked up": a light disc with a small accent dot, kept inside the bar. */
 .tb-btn.is-on {
   color: #1a1a1a;
   background: var(--tb-ink);
-  transform: translateY(-5px);
-  box-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.5);
+  box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.5);
 }
 .tb-btn.is-on::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: 4px;
   left: 50%;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
   border-radius: 50%;
   background: var(--hot);
 }
@@ -747,7 +734,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 30px;
+  height: 28px;
   padding: 0 10px;
   border-radius: 999px;
   background: var(--tb-chip);
@@ -790,7 +777,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 30px;
+  height: 28px;
   padding: 0 11px;
   border-radius: 999px;
   background: var(--tb-chip);
@@ -802,7 +789,7 @@
 .tb-compose input {
   flex: 1;
   min-width: 0;
-  height: 40px;
+  height: 32px;
   border: 0;
   outline: 0;
   background: transparent;
@@ -815,8 +802,8 @@
 .tb-send {
   all: unset;
   cursor: pointer;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -953,7 +940,7 @@
 .rec-sheet {
   position: absolute;
   left: 50%;
-  bottom: 88px;
+  bottom: 72px;
   z-index: 7;
   width: 420px;
   margin-left: -210px;

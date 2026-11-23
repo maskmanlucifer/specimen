@@ -27,7 +27,7 @@ export function AppHeader({ onSearch }: { onSearch?: () => void }) {
         </button>
       )}
       <button type="button" className="app-user" onClick={() => nav('/settings')} aria-label="Settings">
-        <Avatar text={initials(user?.name ?? '?')} />
+        <Avatar text={initials(user?.name ?? '?')} size={30} />
       </button>
     </header>
   );
