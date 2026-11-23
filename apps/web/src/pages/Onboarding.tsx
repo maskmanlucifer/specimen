@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { formatBytes, sampleBoards, slugify, STORAGE_BADGE, STORAGE_NAME, type StorageCredentials, type StorageInfo, type StorageKind, type StorageTestResult } from '@specimen/schema';
-import { Button, Field, Icon, Input, Label, Logo, StorageBadge } from '../components/ui';
+import { Button, Field, Icon, Input, Label, Logo, StorageBadge, Working } from '../components/ui';
 import { api } from '../lib/api';
 import { cx } from '../lib/format';
 import { useSession } from '../store/session';
@@ -181,7 +181,7 @@ function KeyForm({ kind, onBack, onSaved }: { kind: StorageKind; onBack: () => v
         )}
         <div className="ob-test">
           <Button onClick={run} disabled={testing}>
-            {testing ? 'Testing…' : test ? 'Test again' : 'Test connection'}
+            {testing ? <Working label="Testing" /> : test ? 'Test again' : 'Test connection'}
           </Button>
           <span className="mono muted">Writes and deletes one tiny test file.</span>
         </div>

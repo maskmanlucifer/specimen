@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatBytes, orderedSections, type HostInfo, type HostKind, type PublicFile } from '@specimen/schema';
-import { Button, Dialog, Field, Icon, Input, Label, Segmented } from '../components/ui';
+import { Button, Dialog, Field, Icon, Input, Label, Segmented, Working } from '../components/ui';
 import { api } from '../lib/api';
 import { cx } from '../lib/format';
 import { useBoard } from '../store/board';
@@ -300,7 +300,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
           <div className="pub-foot-r">
             <Button onClick={() => nav(`/b/${storageId}/${slug}/preview`)}>Preview as reader</Button>
             <Button variant="primary" onClick={publish} disabled={busy || (mode === 'host' && !host)}>
-              {busy ? 'Publishing…' : mode === 'share' ? 'Publish share link' : `Publish to ${def.label}`}
+              {busy ? <Working label="Publishing" /> : mode === 'share' ? 'Publish share link' : `Publish to ${def.label}`}
             </Button>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { CARD_LABEL, formatBytes, formatTime, hostOf, type Board, type Card, type CardOf } from '@specimen/schema';
 import { Code, FrameFigure, TeX, useMedia, useStoryEnv, Waveform } from '@specimen/story';
-import { Icon, Tag } from '../../components/ui';
+import { Icon, Tag, Working } from '../../components/ui';
+import { useUnfurling } from '../useCapture';
 import { useBoard } from '../../store/board';
 
 function Head({ left, right }: { left: React.ReactNode; right?: React.ReactNode }) {
@@ -180,6 +181,7 @@ function FigureBody({ card, board, n }: { card: CardOf<'figure'>; board: Board; 
 /** The body of one card on the canvas, by type. */
 export function CardBody({ card, board, figureNo }: { card: Card; board: Board; figureNo?: number }) {
   const media = useMedia();
+  const unfurling = useUnfurling((s) => s.ids.has(card.id));
   switch (card.type) {
     case 'note':
       return (
@@ -217,6 +219,7 @@ export function CardBody({ card, board, figureNo }: { card: Card; board: Board; 
         <>
           {card.image ? <img className="card-img" src={media(card.image)} alt="" /> : <Hatch height={64} />}
           <div className="card-pad">
+            {unfurling && <Working label="Fetching preview" />}
             <div className="card-title">{card.title ?? card.url}</div>
             <div className="card-source mono">
               <span className="card-favicon">{(card.site ?? hostOf(card.url))[0]?.toUpperCase()}</span>

@@ -465,34 +465,105 @@ select.ui-input {
   padding: 40px;
 }
 
-/* ---------- Toasts ---------- */
+/* ---------- Toasts: paper slips ---------- */
 .toasts {
   position: fixed;
   left: 50%;
-  bottom: 96px;
+  top: 64px;
   transform: translateX(-50%);
   z-index: 120;
   display: grid;
-  gap: 8px;
+  gap: 14px;
   justify-items: center;
+  pointer-events: none;
 }
+/* A receipt torn off a roll: ruled paper, mono text, zig-zag bottom edge, a small tilt. */
 .toast {
+  --slip: #fffdf7;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 14px;
-  border-radius: var(--r-card);
-  background: var(--ink);
-  color: var(--paper);
-  font: 400 13px var(--font-ui);
-  box-shadow: var(--shadow-lg);
-  animation: ui-fade 0.15s;
+  gap: 16px;
+  padding: 11px 16px 13px;
+  background: repeating-linear-gradient(transparent 0 17px, rgb(26 26 26 / 0.04) 17px 18px), var(--slip);
+  color: var(--ink);
+  font: 500 11.5px var(--font-mono);
+  letter-spacing: 0.02em;
+  filter: drop-shadow(0 8px 14px rgb(26 26 26 / 0.18)) drop-shadow(0 1px 1px rgb(26 26 26 / 0.12));
+  transform-origin: top center;
+  animation: slip-in 0.42s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+  pointer-events: auto;
+}
+.toast:nth-child(even) {
+  --tilt: 0.8deg;
+}
+.toast::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 6px;
+  background: linear-gradient(-45deg, transparent 4px, var(--slip) 0) 0 0 / 8px 8px repeat-x, linear-gradient(45deg, transparent 4px, var(--slip) 0) 0 0 / 8px 8px repeat-x;
+}
+:root[data-theme='dark'] .toast {
+  --slip: #2e2a25;
 }
 .toast button {
   all: unset;
   cursor: pointer;
-  font: 500 12px var(--font-mono);
-  color: color-mix(in srgb, var(--paper) 75%, var(--accent));
+  font: 500 11px var(--font-mono);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@keyframes slip-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-28px) rotate(-4deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(3px) rotate(calc(var(--tilt, -0.8deg) * -1.5));
+  }
+  100% {
+    transform: translateY(0) rotate(var(--tilt, -0.8deg));
+  }
+}
+
+/* ---------- Working pill ---------- */
+/* Long-running work: the star turns and the tint walks through the palette. */
+.ui-working {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font: 500 12.5px var(--font-ui);
+  white-space: nowrap;
+  animation: working-tint 3.2s linear infinite;
+}
+.ui-working svg {
+  animation: working-spin 1.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+.ui-btn .ui-working {
+  height: auto;
+  padding: 0;
+  background: none !important;
+  color: inherit !important;
+  animation: none;
+}
+@keyframes working-tint {
+  0%, 100% { background: var(--ok-soft); color: var(--ok); }
+  25% { background: var(--hot-soft); color: var(--hot); }
+  50% { background: var(--accent-soft); color: var(--accent); }
+  75% { background: var(--warn-soft); color: var(--warn); }
+}
+@keyframes working-spin {
+  0% { transform: rotate(0) scale(1); }
+  50% { transform: rotate(90deg) scale(0.8); }
+  100% { transform: rotate(180deg) scale(1); }
 }
 
 @media (max-width: 760px) {

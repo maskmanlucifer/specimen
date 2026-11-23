@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { CARD_LABEL, cardText, settingsWithDefaults, type CardOf, type PluginSetting } from '@specimen/schema';
 import { PluginFrame, useFigureInputs, useSteps, StepBar, useStoryEnv, type PluginFrameHandle } from '@specimen/story';
-import { Button, Field, Label, Segmented, Toggle } from '../../components/ui';
+import { Button, Field, Label, Segmented, Toggle, Working } from '../../components/ui';
 import { api } from '../../lib/api';
 import { useBoard } from '../../store/board';
 import { toast } from '../../store/toast';
@@ -139,8 +139,8 @@ export function FigurePanel({ card }: { card: CardOf<'figure'> }) {
       <PanelSection title="Still image for print">
         <div className="panel-still">
           {card.still ? <span className="mono">{card.still.split('/').pop()}</span> : <span className="panel-muted">No still yet.</span>}
-          <Button size="sm" icon="refresh" onClick={regenerate} disabled={busy}>
-            {card.still ? 'Regenerate' : 'Create'}
+          <Button size="sm" icon={busy ? undefined : 'refresh'} onClick={regenerate} disabled={busy}>
+            {busy ? <Working label="Rendering" /> : card.still ? 'Regenerate' : 'Create'}
           </Button>
         </div>
       </PanelSection>

@@ -148,3 +148,18 @@ export function Spinner() {
 export function TypeMark({ type }: { type: string }) {
   return <i className="ui-mark" style={{ background: `var(--t-${type}, var(--faint))` }} aria-hidden />;
 }
+
+/**
+ * Pill shown while slow work runs (publishing, fetching a preview, testing a connection).
+ * Inside a button it drops its tint and keeps only the turning star.
+ */
+export function Working({ label }: { label: string }) {
+  return (
+    <span className="ui-working" role="status">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0z" />
+      </svg>
+      {label}
+    </span>
+  );
+}

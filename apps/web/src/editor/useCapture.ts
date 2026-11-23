@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { create } from 'zustand';
 import { CARD_LABEL, type Card } from '@specimen/schema';
 import { api } from '../lib/api';
 import { analyseAudio, classifyText, fileKind, pdfPages, videoDuration } from '../lib/capture';
@@ -7,6 +8,16 @@ import { toast } from '../store/toast';
 import { useUploads } from '../store/uploads';
 
 type At = { x: number; y: number };
+
+/** Link cards whose preview (title, site, image) is still being fetched. */
+export const useUnfurling = create<{ ids: Set<string> }>(() => ({ ids: new Set() }));
+const setUnfurling = (id: string, on: boolean) =>
+  useUnfurling.setState((s) => {
+    const ids = new Set(s.ids);
+    if (on) ids.add(id);
+    else ids.delete(id);
+    return { ids };
+  });
 
 /**
  * Turns pasted text and dropped files into cards at a canvas position.
@@ -24,7 +35,9 @@ export function useCapture() {
     last.current = card.id;
     undoToast(`${verb} ${input.type === 'link' ? 'link' : 'text'} → ${CARD_LABEL[card.type]} card`);
     if (card.type === 'link') {
+      setUnfurling(card.id, true);
       const u = await api.unfurl(card.url).catch(() => null);
+      setUnfurling(card.id, false);
       if (u) updateCard(card.id, { title: u.title, site: u.site, description: u.description, image: u.image });
     }
     return card;
