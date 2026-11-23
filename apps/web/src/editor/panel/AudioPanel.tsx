@@ -96,7 +96,7 @@ export function AudioEditor({ card, full = false }: { card: CardOf<'audio'>; ful
   useEffect(() => {
     if (!full) return;
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, textarea')) return;
+      if (e.target instanceof Element && e.target.closest('input, textarea')) return;
       const w = ws.current!;
       const c = cardRef.current;
       if (e.key === ' ') (e.preventDefault(), w.playPause());

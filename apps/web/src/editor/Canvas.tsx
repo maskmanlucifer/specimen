@@ -148,7 +148,7 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
   // Paste anywhere on the board (outside text fields) creates a card at the pointer.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, textarea, [contenteditable], .cm-editor')) return;
+      if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable], .cm-editor')) return;
       if (capture.fromData(e.clipboardData, dropPoint())) e.preventDefault();
     };
     window.addEventListener('paste', onPaste);

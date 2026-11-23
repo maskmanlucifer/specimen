@@ -250,7 +250,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               {files.map((f) => (
                 <li key={f.path} className={cx(board.excludeMedia.includes(f.path) && 'is-out')}>
                   <span className="mono">{f.path}</span>
-                  <span className="mono muted">{board.excludeMedia.includes(f.path) ? 'left out' : formatBytes(f.size)}</span>
+                  <span className="mono muted">{board.excludeMedia.includes(f.path) ? 'left out' : f.missing ? 'missing' : formatBytes(f.size)}</span>
                 </li>
               ))}
               {!files.length && <li className="panel-muted">No media files.</li>}
@@ -290,7 +290,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         </div>
 
         <p className="pub-private">
-          <Icon name="lock" size={14} /> {privateCount} card{privateCount === 1 ? '' : 's'} marked private stay private. Your {storage?.name} folder is never made public.
+          <Icon name="lock" size={14} /> {privateCount} card{privateCount === 1 ? '' : 's'} marked private stay private. Your {storage?.name}{storage?.name.toLowerCase().endsWith('folder') ? '' : ' folder'} is never made public.
         </p>
 
         <div className="pub-foot">

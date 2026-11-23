@@ -145,6 +145,8 @@ export interface PublicFile {
   path: string;
   size: number;
   excluded: boolean;
+  /** Referenced by a card but not in storage; the reader shows a placeholder. */
+  missing: boolean;
 }
 
 export interface InstalledPlugin {

@@ -133,7 +133,7 @@ function Editor() {
   // Single-key shortcuts outside text fields.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, textarea, select, [contenteditable], .cm-editor, [role=dialog]')) return;
+      if (e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable], .cm-editor, [role=dialog]')) return;
       const mod = e.metaKey || e.ctrlKey;
       const s = useBoard.getState();
       if (mod && e.key.toLowerCase() === 'z') {

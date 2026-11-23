@@ -83,7 +83,7 @@ export class Publisher {
     const b = await this.boards.get(sid, slug);
     const pub = publicBoard({ ...b, excludeMedia: [] });
     const sizes = new Map((await this.boards.files(sid, slug)).map((f) => [f.path, f.size]));
-    return mediaPaths(pub).map((p) => ({ path: p, size: sizes.get(p) ?? 0, excluded: b.excludeMedia.includes(p) }));
+    return mediaPaths(pub).map((p) => ({ path: p, size: sizes.get(p) ?? 0, excluded: b.excludeMedia.includes(p), missing: !sizes.has(p) }));
   }
 
   /** All files of the static copy, keyed by path relative to the board's public folder. */

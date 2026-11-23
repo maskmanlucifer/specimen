@@ -120,7 +120,7 @@ export default function Dashboard() {
   // "or paste a link anywhere on this page": a pasted URL starts a board titled after the link.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, textarea')) return;
+      if (e.target instanceof Element && e.target.closest('input, textarea')) return;
       const text = e.clipboardData?.getData('text/plain')?.trim() ?? '';
       if (!/^https?:\/\/\S+$/.test(text)) return;
       e.preventDefault();

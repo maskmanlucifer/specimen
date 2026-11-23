@@ -88,7 +88,9 @@ export const useBoard = create<EditorState>((set, get) => {
 
     load: async (sid, slug) => {
       clearTimeout(saveTimer);
-      set({ storageId: sid, slug, board: null, loadError: null, selection: [], past: [], future: [], conflict: null, unsynced: 0, sync: 'saved' });
+      // Reloading the open board (after publish, say) keeps it on screen until the new copy arrives.
+      const same = get().storageId === sid && get().slug === slug && !!get().board;
+      if (!same) set({ storageId: sid, slug, board: null, loadError: null, selection: [], past: [], future: [], conflict: null, unsynced: 0, sync: 'saved' });
       const pending = await offline.get(sid, slug);
       try {
         const { board, storage } = await api.board(sid, slug);
