@@ -1,7 +1,8 @@
 .morph {
   position: relative;
   display: inline-flex;
-  vertical-align: baseline;
+  /* overflow: hidden puts an inline-flex baseline at its bottom edge; drop it by the descender so the word lines up. */
+  vertical-align: -0.34em;
   height: 1.35em;
   margin: 0 0.12em;
   padding: 0;
@@ -9,7 +10,6 @@
   background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
   overflow: hidden;
-  transform: translateY(0.18em);
   transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .morph-inner {

@@ -43,14 +43,14 @@ function Tree({ root, slug }: { root: string; slug: string }) {
       {`${root}/
   settings.json
   ${slug}/
-    board.json        `}
+    board.json  `}
       <span>cards, positions, links</span>
       {`
     media/clip-01.mp3
-    plugins/          `}
+    plugins/    `}
       <span>pinned versions</span>
       {`
-    published/        `}
+    published/  `}
       <span>static copies</span>
     </pre>
   );
