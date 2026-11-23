@@ -1,0 +1,17 @@
+{
+  "name": "specimen",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Research board for one topic at a time. Publish it as an illustrated explanation.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.21.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @specimen/server --filter @specimen/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "start": "pnpm --filter @specimen/server start"
+  }
+}
