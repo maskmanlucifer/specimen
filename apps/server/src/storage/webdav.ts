@@ -30,10 +30,12 @@ export class WebDavStorage implements StorageAdapter {
     if (res.status === 404) return [];
     if (!res.ok) throw await httpError(res, 'PROPFIND');
     const xml = await res.text();
-    const self = new URL(this.url(dir)).pathname.replace(/\/$/, '');
+    // Servers return hrefs as paths or as absolute URLs, encoded or not: compare decoded pathnames.
+    const pathOf = (u: string) => decodeURIComponent(new URL(u, this.cfg.endpoint).pathname).replace(/\/$/, '');
+    const self = pathOf(this.url(dir));
     return [...xml.matchAll(/<(?:\w+:)?response>([\s\S]*?)<\/(?:\w+:)?response>/g)]
       .map(([, r]) => {
-        const href = decodeURIComponent(r.match(/<(?:\w+:)?href>(.*?)<\/(?:\w+:)?href>/)?.[1] ?? '').replace(/\/$/, '');
+        const href = pathOf(r.match(/<(?:\w+:)?href>(.*?)<\/(?:\w+:)?href>/)?.[1] ?? '');
         return {
           name: href.split('/').pop() ?? '',
           href,
