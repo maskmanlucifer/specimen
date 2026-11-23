@@ -1190,12 +1190,12 @@
 }
 .pub-head h2 {
   margin: 0;
-  font-size: 40px;
-  line-height: 1;
+  font-size: 28px;
+  line-height: 1.1;
 }
 .pub-board {
-  font-size: 19px;
-  margin-top: 4px;
+  font-size: 15px;
+  margin-top: 2px;
 }
 .pub-meta {
   font-size: 11px;
@@ -1240,7 +1240,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  align-items: end;
+  align-items: start;
+}
+.pub-fields > .ui-btn {
+  grid-column: 1 / -1;
+  justify-self: end;
 }
 .pub-row {
   display: flex;
@@ -1269,6 +1273,11 @@
   padding: 0;
   display: grid;
   gap: 4px;
+}
+.pub-files {
+  max-height: 196px;
+  overflow-y: auto;
+  gap: 0;
 }
 .pub-trail li {
   display: grid;
@@ -1320,12 +1329,18 @@
   font-size: 13px;
   color: var(--muted);
 }
+/* Stays in view while the dialog body scrolls, so the main action is never below the fold. */
 .pub-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 16px;
+  margin: 0 -28px -24px;
+  padding: 12px 28px;
   border-top: 1px solid var(--line);
+  background: var(--surface);
 }
 .pub-foot-r,
 .pub-actions {
