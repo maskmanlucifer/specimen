@@ -120,7 +120,10 @@ function Storage() {
             </div>
             <div className="mono muted set-card-path">
               {s.account ? `${s.account} · ` : ''}
-              {s.root} · {boards.filter((b) => b.storageId === s.id).length} boards
+              {s.root} · {(() => {
+                const n = boards.filter((b) => b.storageId === s.id).length;
+                return `${n} board${n === 1 ? '' : 's'}`;
+              })()}
             </div>
             {s.usage && (
               <div className="set-usage">
