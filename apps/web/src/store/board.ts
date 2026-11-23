@@ -39,6 +39,10 @@ export interface EditorState {
   change: (fn: (b: Board) => void, opts?: { log?: { action: LogAction; cardId?: string; text: string }; history?: boolean }) => void;
   undo: () => void;
   redo: () => void;
+  /**
+   * Sets the selected ids. The same ids keep the same array: a new array re-syncs the
+   * canvas, which reports the selection again, in an endless loop that freezes the page.
+   */
   select: (ids: string[]) => void;
   addCard: (card: NewCard, at: { x: number; y: number }) => Card;
   updateCard: (id: string, patch: Partial<Card>, logText?: string) => void;
@@ -203,7 +207,10 @@ export const useBoard = create<EditorState>((set, get) => {
       scheduleSave();
     },
 
-    select: (ids) => set({ selection: ids }),
+    select: (ids) => {
+      const cur = get().selection;
+      if (cur.length !== ids.length || cur.some((id, i) => id !== ids[i])) set({ selection: ids });
+    },
 
     addCard: (input, at) => {
       const now = Date.now();
