@@ -1,0 +1,6 @@
+svg { display: block; }
+.axis { stroke: var(--line); stroke-width: 1; }
+.curve { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.probe { fill: var(--hot); }
+.tick, .read { font-size: 10px; fill: var(--muted); }
+.err { padding: 16px; color: var(--hot); }

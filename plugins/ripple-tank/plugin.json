@@ -1,0 +1,18 @@
+{
+  "id": "ripple-tank",
+  "name": "Ripple tank",
+  "version": "0.4.0",
+  "description": "Two point sources and their interference pattern.",
+  "long": "Two sources emit waves of the same wavelength. Where crests meet crests the dots grow; where a crest meets a trough they vanish (nodes). Press play to run the waves; hover to read the amplitude.",
+  "author": "specimen-community",
+  "license": "MIT",
+  "category": "figures",
+  "permissions": [],
+  "inputs": [],
+  "settings": [
+    { "type": "range", "key": "wavelength", "label": "Wavelength", "min": 10, "max": 60, "step": 1, "unit": "px", "default": 26 },
+    { "type": "boolean", "key": "nodes", "label": "Show nodes", "default": false }
+  ],
+  "stepped": true,
+  "height": 240
+}

@@ -1,0 +1,5 @@
+svg { display: block; }
+.dot { fill: var(--ink); }
+.node { fill: var(--hot); }
+.src { fill: var(--hot); }
+.read { font-size: 10.5px; fill: var(--muted); }

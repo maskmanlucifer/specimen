@@ -1,0 +1,14 @@
+svg { display: block; }
+.grid { stroke: var(--grid); stroke-width: 1; }
+.lbl { font-size: 10px; fill: var(--muted); letter-spacing: .06em; }
+.dot { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; }
+.hot-f { fill: var(--hot); stroke: var(--hot); }
+.arc { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+.arc.hot { stroke: var(--hot); stroke-width: 1.8; }
+.note { font-size: 10.5px; fill: var(--muted); }
+.hot-t { fill: var(--hot); }
+.cell { fill: var(--surface); stroke: var(--ink); stroke-width: 1.2; }
+.cell.done { fill: var(--grid); }
+.cell.src { fill: var(--surface); stroke: var(--hot); stroke-dasharray: 3 2; }
+.ch { font-size: 12px; fill: var(--ink); }
+.ch.on { fill: #fff; }

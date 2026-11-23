@@ -1,0 +1,8 @@
+svg { display: block; }
+.edge { stroke: var(--ink); stroke-width: 1.1; }
+.bit { font-size: 9.5px; fill: var(--muted); }
+.node circle { fill: var(--surface); stroke: var(--ink); stroke-width: 1.2; }
+.node text { font-size: 10px; fill: var(--ink); }
+.node.hot circle { fill: var(--hot); stroke: var(--hot); }
+.node.hot text { fill: #fff; }
+.code { font-size: 11px; fill: var(--ink-2); }

@@ -1,0 +1,2 @@
+canvas { display: block; cursor: crosshair; }
+.tip { position: absolute; pointer-events: none; padding: 3px 6px; background: var(--ink); color: var(--paper); font-size: 10.5px; border-radius: 3px; white-space: nowrap; }

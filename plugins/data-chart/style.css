@@ -1,0 +1,8 @@
+svg { display: block; }
+.axis { stroke: var(--ink); stroke-width: 1; }
+.mark { fill: var(--ink-2); }
+.mark.first, .mark:hover { fill: var(--hot); }
+.line { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.lbl { font-size: 10px; fill: var(--muted); }
+.val { font-size: 11px; fill: var(--ink); }
+.empty { padding: 20px; color: var(--muted); }

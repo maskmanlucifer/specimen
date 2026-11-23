@@ -1,0 +1,18 @@
+{
+  "id": "step-animator",
+  "name": "Step-through animator",
+  "version": "1.0.0",
+  "description": "Walk readers through an algorithm one step at a time.",
+  "long": "A stepped diagram with ◀ PREV / ▶ PLAY / NEXT ▶ controls. Pick a preset: hash matching (audio fingerprint lookup, each hit votes for a song offset) or sliding window (LZ77 finds the longest earlier match). The same plugin is reused across topics with different data.",
+  "author": "specimen-community",
+  "license": "MIT",
+  "category": "figures",
+  "permissions": [],
+  "inputs": [],
+  "settings": [
+    { "type": "select", "key": "preset", "label": "Preset", "options": ["hash-matching", "sliding-window"], "default": "hash-matching" },
+    { "type": "text", "key": "text", "label": "Text (sliding window)", "default": "ABRACADABRA" }
+  ],
+  "stepped": true,
+  "height": 220
+}

@@ -1,0 +1,18 @@
+{
+  "id": "tree-builder",
+  "name": "Tree builder",
+  "version": "1.0.0",
+  "description": "Builds a Huffman tree from text, one merge per step.",
+  "long": "Counts the symbols in the input, then repeatedly joins the two rarest nodes. Each step is one merge; the new node is shown in the accent colour. The final step shows each symbol's code: the path from the root, 0 for left and 1 for right.",
+  "author": "specimen-community",
+  "license": "MIT",
+  "category": "figures",
+  "permissions": [],
+  "inputs": [],
+  "settings": [
+    { "type": "text", "key": "input", "label": "Input text", "default": "ABRACADABRA" },
+    { "type": "boolean", "key": "codes", "label": "Show codes", "default": true }
+  ],
+  "stepped": true,
+  "height": 260
+}

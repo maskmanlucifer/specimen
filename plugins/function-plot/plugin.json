@@ -1,0 +1,19 @@
+{
+  "id": "function-plot",
+  "name": "Function plot",
+  "version": "1.0.0",
+  "description": "Plot y = f(x) with a parameter slider.",
+  "long": "Type an expression in x and a. Math functions (sin, exp, log…) need no prefix. The parameter a gets a slider in the side panel, so readers of the published page can see how the curve changes.",
+  "author": "specimen-community",
+  "license": "MIT",
+  "category": "math",
+  "permissions": [],
+  "inputs": [],
+  "settings": [
+    { "type": "text", "key": "expr", "label": "y =", "default": "-x * log2(x) - (1 - x) * log2(1 - x)" },
+    { "type": "range", "key": "a", "label": "Parameter a", "min": -5, "max": 5, "step": 0.1, "default": 1 },
+    { "type": "text", "key": "domain", "label": "x from, to", "default": "0, 1" }
+  ],
+  "stepped": false,
+  "height": 220
+}

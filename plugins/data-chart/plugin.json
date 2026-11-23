@@ -1,0 +1,19 @@
+{
+  "id": "data-chart",
+  "name": "Data chart",
+  "version": "1.1.0",
+  "description": "Bar or line chart from a small CSV.",
+  "long": "Paste two columns of CSV (label, value). Renders a calm bar or line chart in the board's style. Hover a mark to read its value. Link a code card with CSV in it to use that instead.",
+  "author": "specimen-community",
+  "license": "MIT",
+  "category": "data",
+  "permissions": ["read-inputs"],
+  "inputs": [{ "key": "data", "label": "CSV from a code card", "accepts": ["code", "note"] }],
+  "settings": [
+    { "type": "text", "key": "csv", "label": "CSV", "multiline": true, "default": "e,12.7\nt,9.1\na,8.2\no,7.5\ni,7.0\nn,6.7\ns,6.3\nh,6.1" },
+    { "type": "select", "key": "kind", "label": "Chart", "options": ["bar", "line"], "default": "bar" },
+    { "type": "text", "key": "unit", "label": "Unit", "default": "%" }
+  ],
+  "stepped": false,
+  "height": 220
+}
