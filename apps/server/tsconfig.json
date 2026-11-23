@@ -1,7 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "lib": ["ES2022", "DOM"], "types": ["node"] },
-  // Workspace packages are listed so `tsx` (which applies this file only to included paths)
-  // compiles their TSX with the automatic JSX runtime when the server renders stories.
-  "include": ["src", "../../packages/schema/src", "../../packages/story/src"]
-}
