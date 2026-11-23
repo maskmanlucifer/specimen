@@ -3,6 +3,7 @@ import type { BoardThumb as Thumb } from '@specimen/schema';
 /**
  * Dashboard thumbnail: section and card boxes at their real positions, cropped to the
  * top-left of the board, with one connection curve, on the dotted canvas background.
+ * Each card carries its type mark, so a board's content shows at a glance.
  */
 export function BoardThumb({ thumb, seed = 0 }: { thumb: Thumb; seed?: number }) {
   const vw = Math.min(thumb.w, 1100);
@@ -20,7 +21,11 @@ export function BoardThumb({ thumb, seed = 0 }: { thumb: Thumb; seed?: number })
         <rect key={`s${i}`} x={s.x} y={s.y} width={s.w} height={s.h} rx={14} fill="var(--section)" stroke="var(--section-line)" strokeWidth={2} />
       ))}
       {thumb.cards.map((c, i) => (
-        <rect key={`c${i}`} x={c.x} y={c.y} width={c.w} height={Math.min(c.h, 140)} rx={8} fill="var(--surface)" stroke="var(--line)" strokeWidth={2} />
+        <g key={`c${i}`}>
+          <rect x={c.x} y={c.y} width={c.w} height={Math.min(c.h, 140)} rx={8} fill="var(--surface)" stroke="var(--line)" strokeWidth={2} />
+          {/* The card's type mark, as on the canvas. */}
+          <rect x={c.x + 12} y={c.y + 12} width={Math.min(28, c.w / 4)} height={7} rx={2} fill={`var(--t-${c.type}, var(--line-2))`} />
+        </g>
       ))}
       {thumb.cards.length === 0 && thumb.sections.length === 0 && (
         <text x={vw / 2} y={vh / 2} textAnchor="middle" fontSize={28} fill="var(--faint)" fontFamily="var(--font-mono)">

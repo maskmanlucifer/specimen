@@ -17,7 +17,7 @@ export function thumbOf(b: Board): BoardThumb {
   const boxes = [...b.sections, ...b.cards.map((c) => ({ ...c, h: c.h ?? 90 }))];
   const w = Math.max(400, ...boxes.map((x) => x.x + x.w));
   const h = Math.max(300, ...boxes.map((x) => x.y + x.h));
-  return { w, h, sections: b.sections.map(({ x, y, w, h }) => ({ x, y, w, h })), cards: b.cards.map((c) => ({ x: c.x, y: c.y, w: c.w, h: c.h ?? 90 })) };
+  return { w, h, sections: b.sections.map(({ x, y, w, h }) => ({ x, y, w, h })), cards: b.cards.map((c) => ({ x: c.x, y: c.y, w: c.w, h: c.h ?? 90, type: c.type })) };
 }
 
 function summary(storageId: string, b: Board): BoardSummary {

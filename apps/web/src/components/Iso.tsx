@@ -84,17 +84,26 @@ export function IsoCabinet() {
   );
 }
 
-/** Empty board: a section tray with three cards dropping in. */
-export function IsoTray() {
+/**
+ * Empty board: a section tray with three cards dropping in.
+ *
+ * @param callouts - Show the mono labels. Off where the drawing is too small to read them.
+ * @default true
+ */
+export function IsoTray({ callouts = true }: { callouts?: boolean }) {
   return (
     <svg className="iso" viewBox="-190 -150 400 310" role="img" aria-label="Cards dropping into an empty section">
       <IsoBox x={0} y={0} z={0} w={170} d={120} h={10} tone="section" />
       <IsoBox x={24} y={26} z={52} w={62} d={44} h={3} />
       <IsoBox x={98} y={18} z={86} w={52} d={38} h={3} tone="accent" />
       <IsoBox x={70} y={70} z={30} w={70} d={34} h={3} tone="hot" />
-      <IsoCallout at={[55, 48, 55]} to={[-140, -95]} label="Paste ⌘V" />
-      <IsoCallout at={[124, 37, 89]} to={[170, -120]} label="Drop files" align="end" />
-      <IsoCallout at={[105, 87, 33]} to={[165, 40]} label="Write N" align="end" />
+      {callouts && (
+        <>
+          <IsoCallout at={[55, 48, 55]} to={[-140, -95]} label="Paste ⌘V" />
+          <IsoCallout at={[124, 37, 89]} to={[170, -120]} label="Drop files" align="end" />
+          <IsoCallout at={[105, 87, 33]} to={[165, 40]} label="Write N" align="end" />
+        </>
+      )}
     </svg>
   );
 }

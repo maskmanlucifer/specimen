@@ -77,7 +77,8 @@ export interface BoardThumb {
   w: number;
   h: number;
   sections: { x: number; y: number; w: number; h: number }[];
-  cards: { x: number; y: number; w: number; h: number }[];
+  /** `type` lets the dashboard tint each card with its type colour and show the board's mix. */
+  cards: { x: number; y: number; w: number; h: number; type: string }[];
 }
 
 export interface BoardSummary {

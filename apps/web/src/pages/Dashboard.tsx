@@ -1,26 +1,71 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { formatBytes, sampleBoards, STORAGE_NAME, type ActivityItem, type BoardSummary, type StorageInfo, type Visibility } from '@specimen/schema';
+import { CARD_LABEL, formatBytes, sampleBoards, STORAGE_NAME, type ActivityItem, type BoardSummary, type CardType, type StorageInfo, type Visibility } from '@specimen/schema';
 import { AppHeader } from '../components/AppHeader';
 import { BoardThumb } from '../components/BoardThumb';
+import { IsoTray } from '../components/Iso';
 import { Palette, usePaletteShortcut, type PaletteItem } from '../components/Palette';
-import { Button, Dialog, Field, Icon, Input, Label, Meter, Segmented, StatusDot, StorageBadge, VisibilityPill } from '../components/ui';
+import { Button, Dialog, Field, Icon, Input, Kbd, Label, Meter, StatusDot, StorageBadge, VisibilityPill, Working } from '../components/ui';
 import { api } from '../lib/api';
-import { ago, editedAgo } from '../lib/format';
+import { ago, cx, editedAgo } from '../lib/format';
 import { offline, type PendingBoard } from '../lib/offline';
+import { ADDABLE } from '../editor/Toolbar';
 import { toast } from '../store/toast';
 import './dashboard.css';
 
 type Filter = 'all' | Visibility;
+type Density = 'comfortable' | 'compact' | 'list';
+
+const DENSITY_KEY = 'specimen-dash-view';
+
+function readDensity(): Density {
+  try {
+    const v = localStorage.getItem(DENSITY_KEY);
+    return v === 'compact' || v === 'list' ? v : 'comfortable';
+  } catch {
+    return 'comfortable';
+  }
+}
 
 function SyncStatus({ storage, pending }: { storage?: StorageInfo; pending?: PendingBoard }) {
   if (storage?.status === 'reconnect') return <StatusDot tone="danger">Reconnect needed</StatusDot>;
   if (storage?.status === 'disconnected') return <StatusDot tone="danger">Disconnected</StatusDot>;
-  if (pending) return <StatusDot tone="muted">Offline · {pending.changes} change{pending.changes === 1 ? '' : 's'} queued</StatusDot>;
+  if (pending) return <StatusDot tone="muted">Offline · {pending.changes} queued</StatusDot>;
   return <StatusDot tone="ok">Saved</StatusDot>;
 }
 
-/** "New board" dialog: title, where it lives, and an optional example to start from. */
+/** Thin stacked bar of a board's card types, in type colours (hover a segment for the count). */
+function TypeBar({ board }: { board: BoardSummary }) {
+  const counts = new Map<string, number>();
+  for (const c of board.thumb.cards) counts.set(c.type, (counts.get(c.type) ?? 0) + 1);
+  const total = board.thumb.cards.length;
+  if (!total) return <span className="typebar typebar--empty" />;
+  return (
+    <span className="typebar" aria-label={[...counts].map(([t, n]) => `${n} ${t}`).join(', ')}>
+      {ADDABLE.filter((t) => counts.has(t)).map((t) => (
+        <i key={t} style={{ flexGrow: counts.get(t), background: `var(--t-${t})` }} title={`${counts.get(t)} ${CARD_LABEL[t as CardType].toLowerCase()}`} />
+      ))}
+    </span>
+  );
+}
+
+/** Activity text with long paths and URLs shortened to what a person recognises. */
+function tidy(text: string): string {
+  return text
+    .replace(/file:\/\/\S*\/([^/\s]+)\/index\.html/g, '…/$1/')
+    .replace(/https?:\/\/([^/\s]+)(\/\S*)?/g, (_m, host: string, path = '') => host.replace(/^www\./, '') + (path.length > 24 ? `${path.slice(0, 22)}…` : path));
+}
+
+/** Colour of an activity's timeline dot, by what happened. */
+function activityTone(what: string): string {
+  if (/^Published/.test(what)) return 'var(--hot)';
+  if (/^Created|^Imported/.test(what)) return 'var(--accent)';
+  if (/^Connected/.test(what)) return 'var(--ok)';
+  if (/plugin/i.test(what)) return 'var(--t-math)';
+  return 'var(--faint)';
+}
+
+/** Full "New board" dialog: title, storage and an optional example to start from. */
 function NewBoardDialog({ open, onClose, storages, initialTitle = '' }: { open: boolean; onClose: () => void; storages: StorageInfo[]; initialTitle?: string }) {
   const nav = useNavigate();
   const [title, setTitle] = useState(initialTitle);
@@ -31,10 +76,10 @@ function NewBoardDialog({ open, onClose, storages, initialTitle = '' }: { open: 
     if (open) {
       setTitle(initialTitle);
       setSid(storages.find((s) => s.isDefault)?.id ?? storages[0]?.id ?? '');
+      setBusy(false);
     }
   }, [open, initialTitle, storages]);
   const st = storages.find((s) => s.id === sid);
-
   const create = async () => {
     setBusy(true);
     try {
@@ -45,7 +90,6 @@ function NewBoardDialog({ open, onClose, storages, initialTitle = '' }: { open: 
       setBusy(false);
     }
   };
-
   return (
     <Dialog open={open} onClose={onClose} label="New board" width={480}>
       <form
@@ -84,11 +128,48 @@ function NewBoardDialog({ open, onClose, storages, initialTitle = '' }: { open: 
         <div className="nb-actions">
           <Button onClick={onClose}>Cancel</Button>
           <Button type="submit" variant="primary" disabled={busy || !sid}>
-            Create board
+            {busy ? <Working label="Creating" /> : 'Create board'}
           </Button>
         </div>
       </form>
     </Dialog>
+  );
+}
+
+/**
+ * Quick start (after the "response bar" pattern): type a topic, press Enter, land on the new
+ * board in the default storage. The options button opens the full dialog.
+ */
+function StartComposer({ inputRef, onOptions }: { inputRef: React.RefObject<HTMLInputElement>; onOptions: (title: string) => void }) {
+  const nav = useNavigate();
+  const [title, setTitle] = useState('');
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    if (!title.trim() || busy) return;
+    setBusy(true);
+    try {
+      const { storageId, board } = await api.createBoard(title.trim());
+      nav(`/b/${storageId}/${board.slug}`);
+    } catch (e) {
+      toast((e as Error).message);
+      setBusy(false);
+    }
+  };
+  return (
+    <form
+      className={cx('start', title && 'has-text')}
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      <Icon name="plus" size={16} />
+      <input ref={inputRef} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Start a board — what are you researching?" aria-label="New board title" />
+      {busy ? <Working label="Creating" /> : title ? <Kbd>↵</Kbd> : null}
+      <button type="button" className="start-more" onClick={() => onOptions(title)} title="More options: storage and examples" aria-label="More options">
+        <Icon name="settings" size={15} />
+      </button>
+    </form>
   );
 }
 
@@ -99,11 +180,12 @@ export default function Dashboard() {
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [pending, setPending] = useState<PendingBoard[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
-  const [view, setView] = useState<'grid' | 'list'>(() => (localStorage.getItem('specimen-dash-view') as 'grid' | 'list') ?? 'grid');
+  const [density, setDensity] = useState<Density>(readDensity);
   const [newOpen, setNewOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [palette, setPalette] = useState(false);
   const [hits, setHits] = useState<PaletteItem[]>([]);
+  const startRef = useRef<HTMLInputElement>(null);
   usePaletteShortcut(setPalette);
 
   const load = useCallback(async () => {
@@ -135,8 +217,12 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('specimen-dash-view', view);
-  }, [view]);
+    try {
+      localStorage.setItem(DENSITY_KEY, density);
+    } catch {
+      /* private mode: the choice lasts for this tab */
+    }
+  }, [density]);
 
   const storageOf = useMemo(() => new Map(storages.map((s) => [s.id, s])), [storages]);
   const pendingOf = (b: BoardSummary) => pending.find((p) => p.storageId === b.storageId && p.board.slug === b.slug);
@@ -151,15 +237,20 @@ export default function Dashboard() {
   const shown = (boards ?? []).filter((b) => filter === 'all' || b.visibility === filter);
   const places = new Set((boards ?? []).map((b) => b.storageId)).size;
   const open = (b: BoardSummary) => nav(`/b/${b.storageId}/${b.slug}`);
-
   const boardItems: PaletteItem[] = (boards ?? []).map((b) => ({ id: `board:${b.storageId}/${b.slug}`, label: b.title, icon: 'Board', hint: `${b.cards} cards`, run: () => open(b) }));
+  const FILTERS: { value: Filter; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'published', label: 'Published' },
+    { value: 'draft', label: 'Drafts' },
+    { value: 'unlisted', label: 'Unlisted' },
+  ];
 
   return (
     <div className="dash">
       <AppHeader onSearch={() => setPalette(true)} />
-      <div className="page dash-page">
+      <div className="dash-page">
         <main>
-          <div className="dash-head">
+          <header className="dash-head">
             <div>
               <h1 className="display dash-title">
                 Your <em>boards</em>
@@ -168,39 +259,90 @@ export default function Dashboard() {
                 {counts.all} board{counts.all === 1 ? '' : 's'} · stored across {places} place{places === 1 ? '' : 's'} you own
               </p>
             </div>
-            <div className="dash-tools">
-              <Segmented
-                value={filter}
-                onChange={setFilter}
-                options={[
-                  { value: 'all', label: `All ${counts.all}` },
-                  { value: 'published', label: `Published ${counts.published}` },
-                  { value: 'draft', label: `Drafts ${counts.draft}` },
-                  { value: 'unlisted', label: `Unlisted ${counts.unlisted}` },
-                ]}
-              />
-              <Segmented
-                value={view}
-                onChange={setView}
-                options={[
-                  { value: 'grid', label: <Icon name="grid" title="Grid" /> },
-                  { value: 'list', label: <Icon name="list" title="List" /> },
-                ]}
-              />
-              <Button variant="primary" icon="plus" onClick={() => (setNewTitle(''), setNewOpen(true))}>
-                New board
-              </Button>
+            <StartComposer inputRef={startRef} onOptions={(t) => (setNewTitle(t), setNewOpen(true))} />
+          </header>
+
+          <div className="dash-bar" role="toolbar" aria-label="Filter and layout">
+            <div className="dash-chips">
+              {FILTERS.map((f) => (
+                <button key={f.value} type="button" className={cx('dash-chip', filter === f.value && 'is-on')} aria-pressed={filter === f.value} onClick={() => setFilter(f.value)}>
+                  {f.label}
+                  <span className="dash-count mono">{counts[f.value]}</span>
+                </button>
+              ))}
+            </div>
+            <div className="dash-density" role="group" aria-label="Layout">
+              {(
+                [
+                  ['comfortable', 'grid', 'Comfortable grid'],
+                  ['compact', 'grid', 'Compact grid'],
+                  ['list', 'list', 'List'],
+                ] as const
+              ).map(([d, icon, label]) => (
+                <button key={d} type="button" className={cx('dash-dbtn', density === d && 'is-on')} aria-pressed={density === d} title={label} aria-label={label} onClick={() => setDensity(d)}>
+                  <Icon name={icon} size={d === 'compact' ? 12 : 15} />
+                </button>
+              ))}
             </div>
           </div>
 
           {boards === null ? (
             <p className="muted">Loading boards…</p>
-          ) : view === 'grid' ? (
-            <div className="dash-grid">
+          ) : boards.length === 0 ? (
+            <div className="dash-empty">
+              <div className="dash-empty-art">
+                <IsoTray />
+              </div>
+              <h2 className="display">
+                Nothing on the <em>shelf</em> yet
+              </h2>
+              <p className="read">Start a board above, paste a link anywhere on this page, or open an example to see a finished one.</p>
+              <div className="dash-empty-actions">
+                {sampleBoards.map((s) => (
+                  <Button key={s.slug} onClick={() => api.createBoard(s.title, undefined, s.slug).then((r) => nav(`/b/${r.storageId}/${r.board.slug}`))}>
+                    Example: {s.title}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : density === 'list' ? (
+            <div className="dash-list">
+              <div className="dash-row dash-row--head">
+                {['Board', 'Contents', 'Storage', 'Sync', 'Visibility', 'Edited'].map((h) => (
+                  <Label key={h}>{h}</Label>
+                ))}
+              </div>
+              {shown.map((b, i) => (
+                <Link key={`${b.storageId}/${b.slug}`} to={`/b/${b.storageId}/${b.slug}`} className="dash-row">
+                  <span className="dash-row-board">
+                    <span className="dash-row-thumb">
+                      <BoardThumb thumb={b.thumb} seed={i} />
+                    </span>
+                    <strong>{b.title}</strong>
+                  </span>
+                  <span className="dash-row-types">
+                    <TypeBar board={b} />
+                    <span className="mono muted">{b.cards}</span>
+                  </span>
+                  <span className="bcard-store">
+                    {storageOf.get(b.storageId) && <StorageBadge kind={storageOf.get(b.storageId)!.kind} />}
+                    {storageOf.get(b.storageId)?.name}
+                  </span>
+                  <SyncStatus storage={storageOf.get(b.storageId)} pending={pendingOf(b)} />
+                  <VisibilityPill v={b.visibility} />
+                  <span className="mono muted">{ago(b.updatedAt)}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className={cx('dash-grid', density === 'compact' && 'is-compact')}>
               {shown.map((b, i) => (
                 <Link key={`${b.storageId}/${b.slug}`} to={`/b/${b.storageId}/${b.slug}`} className="bcard">
                   <div className="bcard-thumb">
                     <BoardThumb thumb={b.thumb} seed={i} />
+                    <span className="bcard-open mono">
+                      Open <Icon name="right" size={12} />
+                    </span>
                   </div>
                   <div className="bcard-body">
                     <div className="bcard-row">
@@ -210,6 +352,7 @@ export default function Dashboard() {
                     <p className="mono bcard-meta">
                       {b.cards} cards · {editedAgo(b.updatedAt)}
                     </p>
+                    <TypeBar board={b} />
                     <div className="bcard-row bcard-foot">
                       <span className="bcard-store">
                         {storageOf.get(b.storageId) && <StorageBadge kind={storageOf.get(b.storageId)!.kind} />}
@@ -220,101 +363,58 @@ export default function Dashboard() {
                   </div>
                 </Link>
               ))}
-              <button type="button" className="bcard bcard-new" onClick={() => (setNewTitle(''), setNewOpen(true))}>
-                <Icon name="plus" size={20} />
-                <span className="read">Start a new board</span>
-                <span className="mono">or paste a link anywhere on this page</span>
-              </button>
-            </div>
-          ) : (
-            <table className="dash-table">
-              <thead>
-                <tr>
-                  {['Board', 'Cards', 'Storage', 'Sync', 'Visibility', 'Edited'].map((h) => (
-                    <th key={h}>
-                      <Label>{h}</Label>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((b, i) => (
-                  <tr key={`${b.storageId}/${b.slug}`} onClick={() => open(b)} tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && open(b)}>
-                    <td>
-                      <span className="dash-table-board">
-                        <span className="dash-table-thumb">
-                          <BoardThumb thumb={b.thumb} seed={i} />
-                        </span>
-                        <span className="read">{b.title}</span>
-                      </span>
-                    </td>
-                    <td className="mono">{b.cards}</td>
-                    <td>
-                      <span className="bcard-store">
-                        {storageOf.get(b.storageId) && <StorageBadge kind={storageOf.get(b.storageId)!.kind} />}
-                        {storageOf.get(b.storageId)?.name}
-                      </span>
-                    </td>
-                    <td>
-                      <SyncStatus storage={storageOf.get(b.storageId)} pending={pendingOf(b)} />
-                    </td>
-                    <td>
-                      <VisibilityPill v={b.visibility} />
-                    </td>
-                    <td className="mono muted">{ago(b.updatedAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {boards?.length === 0 && (
-            <div className="dash-empty">
-              <p className="read">No boards yet. Start one, or open an example to see how a finished board looks.</p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {sampleBoards.map((s) => (
-                  <Button key={s.slug} onClick={() => api.createBoard(s.title, undefined, s.slug).then((r) => nav(`/b/${r.storageId}/${r.board.slug}`))}>
-                    Open example: {s.title}
-                  </Button>
-                ))}
-              </div>
+              {filter === 'all' && (
+                <button type="button" className="bcard bcard-new" onClick={() => startRef.current?.focus()}>
+                  <span className="bcard-new-art">
+                    <IsoTray callouts={false} />
+                  </span>
+                  <span className="bcard-new-title">Start a new board</span>
+                  <span className="mono">type a topic above, or paste a link anywhere</span>
+                </button>
+              )}
             </div>
           )}
         </main>
 
         <aside className="dash-side">
-          <Label>Recent activity</Label>
-          <ul className="dash-activity">
-            {activity.length === 0 && <li className="muted">Nothing yet.</li>}
-            {activity.map((a, i) => (
-              <li key={i}>
-                <span className="mono">{ago(a.at)}</span>
-                <span>
-                  {a.what}
-                  <em className="read">{a.board}</em>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <Label>Where your files live</Label>
-          <ul className="dash-places">
-            {storages.map((s) => (
-              <li key={s.id}>
-                <div className="dash-place-row">
-                  <StorageBadge kind={s.kind} />
-                  <span>{s.name}</span>
-                  {s.status === 'ok' ? (
-                    <span className="mono muted">{s.usage ? `${formatBytes(s.usage.used)}${s.usage.total ? ` of ${formatBytes(s.usage.total)}` : ' · no quota'}` : ''}</span>
-                  ) : (
-                    <Link className="mono dash-reconnect" to="/settings/storage">
-                      Reconnect
-                    </Link>
-                  )}
-                </div>
-                <Meter value={s.usage?.total ? s.usage.used / s.usage.total : 0} tone={s.status === 'ok' ? 'ink' : 'danger'} />
-              </li>
-            ))}
-          </ul>
-          <p className="dash-note">Specimen keeps no copies. Boards are plain JSON and media files in these folders.</p>
+          <section>
+            <Label>Recent activity</Label>
+            <ol className="tl">
+              {activity.length === 0 && <li className="muted">Nothing yet.</li>}
+              {activity.map((a, i) => (
+                <li key={i}>
+                  <i style={{ background: activityTone(a.what) }} />
+                  <div>
+                    <span className="tl-what">{tidy(a.what)}</span>
+                    <span className="tl-board">{a.board}</span>
+                  </div>
+                  <span className="mono tl-when">{ago(a.at)}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+          <section>
+            <Label>Where your files live</Label>
+            <ul className="places">
+              {storages.map((s) => (
+                <li key={s.id}>
+                  <div className="places-row">
+                    <StorageBadge kind={s.kind} />
+                    <span className="places-name">{s.name}</span>
+                    {s.status === 'ok' ? (
+                      <span className="mono muted">{s.usage ? `${formatBytes(s.usage.used)}${s.usage.total ? ` / ${formatBytes(s.usage.total)}` : ''}` : ''}</span>
+                    ) : (
+                      <Link className="mono dash-reconnect" to="/settings/storage">
+                        Reconnect
+                      </Link>
+                    )}
+                  </div>
+                  <Meter value={s.usage?.total ? Math.max(0.015, s.usage.used / s.usage.total) : 0} tone={s.status === 'ok' ? 'accent' : 'danger'} />
+                </li>
+              ))}
+            </ul>
+            <p className="dash-note">Specimen keeps no copies. Boards are plain JSON and media files in these folders.</p>
+          </section>
         </aside>
       </div>
 
