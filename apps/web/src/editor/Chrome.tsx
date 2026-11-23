@@ -234,7 +234,7 @@ export function ConflictDialog() {
         <h2 className="display">
           Two versions of <em>this board</em>
         </h2>
-        <p className="serif">You edited here while another device saved to {storage?.name}. Nothing is lost.</p>
+        <p className="read">You edited here while another device saved to {storage?.name}. Nothing is lost.</p>
         <Label>
           {differ.length} card{differ.length === 1 ? '' : 's'} differ
         </Label>

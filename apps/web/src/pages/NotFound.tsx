@@ -11,7 +11,7 @@ export default function NotFound() {
         <h1 className="display">
           Nothing <em>here</em>
         </h1>
-        <p className="serif">This page does not exist. If you followed a board link, it may have been moved or unpublished.</p>
+        <p className="read">This page does not exist. If you followed a board link, it may have been moved or unpublished.</p>
         <div className="state-actions">
           <Link to="/boards" className="ui-btn ui-btn--primary ui-btn--md">
             Your boards

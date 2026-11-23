@@ -222,7 +222,7 @@ export default function Dashboard() {
               ))}
               <button type="button" className="bcard bcard-new" onClick={() => (setNewTitle(''), setNewOpen(true))}>
                 <Icon name="plus" size={20} />
-                <span className="serif">Start a new board</span>
+                <span className="read">Start a new board</span>
                 <span className="mono">or paste a link anywhere on this page</span>
               </button>
             </div>
@@ -245,7 +245,7 @@ export default function Dashboard() {
                         <span className="dash-table-thumb">
                           <BoardThumb thumb={b.thumb} seed={i} />
                         </span>
-                        <span className="serif">{b.title}</span>
+                        <span className="read">{b.title}</span>
                       </span>
                     </td>
                     <td className="mono">{b.cards}</td>
@@ -269,7 +269,7 @@ export default function Dashboard() {
           )}
           {boards?.length === 0 && (
             <div className="dash-empty">
-              <p className="serif">No boards yet. Start one, or open an example to see how a finished board looks.</p>
+              <p className="read">No boards yet. Start one, or open an example to see how a finished board looks.</p>
               <div style={{ display: 'flex', gap: 8 }}>
                 {sampleBoards.map((s) => (
                   <Button key={s.slug} onClick={() => api.createBoard(s.title, undefined, s.slug).then((r) => nav(`/b/${r.storageId}/${r.board.slug}`))}>
@@ -290,7 +290,7 @@ export default function Dashboard() {
                 <span className="mono">{ago(a.at)}</span>
                 <span>
                   {a.what}
-                  <em className="serif">{a.board}</em>
+                  <em className="read">{a.board}</em>
                 </span>
               </li>
             ))}

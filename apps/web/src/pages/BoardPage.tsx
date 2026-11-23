@@ -245,7 +245,7 @@ function BoardUnavailable({ message, sync }: { message: string; sync: string }) 
       <div className="state-card">
         <Label tone="hot">{notFound ? '404' : sync === 'reconnect' ? 'Reconnect needed' : 'Storage disconnected'}</Label>
         <h1 className="display">{notFound ? <>This board is <em>not here</em></> : <>Storage is <em>disconnected</em></>}</h1>
-        <p className="serif">{notFound ? 'It may have been moved or renamed in your storage.' : `Specimen can't reach this board. ${message}. Changes you made on this device are kept.`}</p>
+        <p className="read">{notFound ? 'It may have been moved or renamed in your storage.' : `Specimen can't reach this board. ${message}. Changes you made on this device are kept.`}</p>
         <div className="state-actions">
           {!notFound && (
             <Button variant="primary" icon="refresh" onClick={() => (window.location.href = `/settings/storage#${sid}`)}>

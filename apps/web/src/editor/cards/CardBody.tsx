@@ -172,7 +172,7 @@ function FigureBody({ card, board, n }: { card: CardOf<'figure'>; board: Board; 
         {inputCard && 'src' in inputCard && <span className="mono card-fig-input">{inputCard.src.split('/').pop()}</span>}
       </div>
       <FrameFigure board={board} card={card} n={n} />
-      {card.caption && <div className="card-fig-caption serif">{card.caption}</div>}
+      {card.caption && <div className="card-fig-caption read">{card.caption}</div>}
     </>
   );
 }

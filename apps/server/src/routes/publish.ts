@@ -4,6 +4,7 @@ import { slugify, type HostKind, type PublishRequest } from '@specimen/schema';
 import type { AppEnv } from '../auth';
 import type { Ctx } from '../context';
 import { readImport } from '../importer';
+import { FONTS_URL } from '../publish';
 import { join, mimeOf } from '../storage/types';
 
 export function publishRoutes(ctx: Ctx) {
@@ -81,8 +82,8 @@ export function shareRoutes(ctx: Ctx) {
 /** Minimal styled page for 404 and private boards (system states 4v, 4w). */
 function statePage(code: string, title: string, body: string): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${code} · Specimen</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital@0;1&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#faf8f4;color:#1a1a1a;font-family:Newsreader,serif;padding:16px}@media(prefers-color-scheme:dark){body{background:#1b1916;color:#ede8df}}
-.l{font:500 11px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#e4572e}h1{font:400 56px/1 'Instrument Serif',serif;margin:14px 0}em{color:#1f6f6b}p{font-size:19px;color:#6b6b6b;max-width:30em}a{font:500 12px 'JetBrains Mono',monospace;color:#8c857a}</style></head>
+<link href="${FONTS_URL}" rel="stylesheet">
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#faf8f4;color:#1a1a1a;font-family:'IBM Plex Sans',system-ui,sans-serif;padding:16px}@media(prefers-color-scheme:dark){body{background:#1b1916;color:#ede8df}}
+.l{font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#e4572e}h1{font:500 52px/1 'Space Grotesk',sans-serif;letter-spacing:-.03em;margin:14px 0}em{color:#1f6f6b;font-style:normal}p{font-size:19px;color:#6b6b6b;max-width:30em}a{font:500 12px 'IBM Plex Mono',monospace;color:#8c857a}</style></head>
 <body><main><div class="l">${code}</div><h1>${title}</h1><p>${body}</p><a href="https://github.com/specimen-dev/specimen">Made with Specimen (open source)</a></main></body></html>`;
 }

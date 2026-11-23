@@ -66,7 +66,7 @@ function Permissions({ kind, onBack }: { kind: StorageKind; onBack: () => void }
       <h1 className="display">
         Before you go to <em>{name.split(' ')[0]}</em>
       </h1>
-      <p className="serif muted">{name} will ask you to allow access. Here is exactly what that means, in plain words.</p>
+      <p className="read muted">{name} will ask you to allow access. Here is exactly what that means, in plain words.</p>
       <div className="ob-perm">
         <Label tone="accent">Specimen can</Label>
         <ul>
@@ -127,7 +127,7 @@ function KeyForm({ kind, onBack, onSaved }: { kind: StorageKind; onBack: () => v
       <h1 className="display">
         Connect <em>{STORAGE_NAME[kind]}</em>
       </h1>
-      <p className="serif muted">{bucket ? 'Any S3-compatible bucket works. ' : ''}Keys are encrypted on this server and never shown again after saving.</p>
+      <p className="read muted">{bucket ? 'Any S3-compatible bucket works. ' : ''}Keys are encrypted on this server and never shown again after saving.</p>
       <div className="ob-form">
         {kind === 'local' && (
           <Field label="Folder on this server" hint="Created if it does not exist.">
@@ -274,7 +274,7 @@ export default function Onboarding() {
             <h1 className="display">
               Where should your boards <em>live</em>?
             </h1>
-            <p className="serif muted">Pick a place you already own. You can add more later and choose one per board.</p>
+            <p className="read muted">Pick a place you already own. You can add more later and choose one per board.</p>
             {GROUPS.map((g) => (
               <div key={g.label} className="ob-group">
                 <Label>{g.label}</Label>
@@ -326,7 +326,7 @@ export default function Onboarding() {
             <h1 className="display">
               Choose a <em>folder</em>
             </h1>
-            <p className="serif muted">Specimen keeps everything under one folder in your {storage.name}.</p>
+            <p className="read muted">Specimen keeps everything under one folder in your {storage.name}.</p>
             <div className="ob-form">
               <Field label="Folder">
                 <div className="ob-folder">
@@ -364,7 +364,7 @@ export default function Onboarding() {
             <h1 className="display">
               Start your first <em>board</em>
             </h1>
-            <p className="serif muted">Examples add sections and cards. Delete what you don't need.</p>
+            <p className="read muted">Examples add sections and cards. Delete what you don't need.</p>
             <Field label="What are you researching?">
               <Input value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
             </Field>

@@ -35,10 +35,14 @@
   --shadow: 0 1px 2px rgb(26 26 26 / 0.04), 0 8px 24px -12px rgb(26 26 26 / 0.12);
   --shadow-lg: 0 24px 64px -16px rgb(26 26 26 / 0.25);
 
-  --font-ui: Geist, system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-  --font-serif: Newsreader, Georgia, serif;
-  --font-display: 'Instrument Serif', Georgia, serif;
+  /* "Engineering manual" type: Space Grotesk titles, IBM Plex Sans for UI and reading, IBM Plex Mono labels. */
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  /* Long-form reading text in the story and on cards. */
+  --font-read: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --display-weight: 500;
+  --display-tracking: -0.03em;
 
   --r-sm: 6px;
   --r: 8px;

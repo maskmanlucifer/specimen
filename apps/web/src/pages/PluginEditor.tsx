@@ -187,7 +187,7 @@ export default function PluginEditor() {
           <Icon name="back" />
         </Link>
         <div>
-          <h1 className="serif">{parsed?.manifest?.name ?? 'Untitled plugin'}</h1>
+          <h1 className="read">{parsed?.manifest?.name ?? 'Untitled plugin'}</h1>
           <span className="mono muted">
             Make a plugin · draft · /Specimen/plugins/{parsed?.manifest?.id ?? '…'}/
           </span>

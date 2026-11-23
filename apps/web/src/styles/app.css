@@ -43,16 +43,17 @@ button {
 .mono {
   font-family: var(--font-mono);
 }
-.serif {
-  font-family: var(--font-serif);
+.read {
+  font-family: var(--font-read);
 }
 .display {
   font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
 }
 .display em {
   color: var(--accent);
+  font-style: normal;
 }
 .muted {
   color: var(--muted);
@@ -127,8 +128,8 @@ button {
 }
 
 .ui-logo {
-  font: italic 400 1em var(--font-serif);
-  letter-spacing: -0.01em;
+  font: 600 0.86em var(--font-display);
+  letter-spacing: -0.04em;
   color: var(--ink);
   text-decoration: none;
 }

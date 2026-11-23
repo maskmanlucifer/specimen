@@ -98,7 +98,7 @@ export function LogView({ onOpen }: { onOpen: (cardId: string) => void }) {
           return (
             <section key={day} className="log-day">
               <div className="log-day-h">
-                <span className="serif">{d.toLocaleDateString('en', { weekday: 'long' })}</span>
+                <span className="read">{d.toLocaleDateString('en', { weekday: 'long' })}</span>
                 <span className="mono muted">{d.toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
               </div>
               <ul>

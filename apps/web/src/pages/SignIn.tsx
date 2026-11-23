@@ -55,7 +55,7 @@ export default function SignIn() {
             <h1 className="display">
               Welcome <em>back</em>
             </h1>
-            <p className="serif muted">This Specimen runs on your own server, in single-user mode.</p>
+            <p className="read muted">This Specimen runs on your own server, in single-user mode.</p>
             <Field label="Password">
               <div className="auth-pw">
                 <Input type={show ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} autoFocus autoComplete="current-password" />
@@ -88,7 +88,7 @@ export default function SignIn() {
             <h1 className="display">
               Check your <em>inbox</em>
             </h1>
-            <p className="serif">We sent a link to {email}. It works for 15 minutes.</p>
+            <p className="read">We sent a link to {email}. It works for 15 minutes.</p>
             <Button variant="ghost" onClick={() => setSent(false)}>
               Use another email
             </Button>
@@ -98,7 +98,7 @@ export default function SignIn() {
             <h1 className="display">
               Sign in to <em>Specimen</em>
             </h1>
-            <p className="serif muted">New here? The same buttons create your account.</p>
+            <p className="read muted">New here? The same buttons create your account.</p>
             <div className="auth-buttons">
               <a className={`ui-btn ui-btn--secondary ui-btn--lg auth-wide${session.providers.google ? '' : ' is-off'}`} href={session.providers.google ? '/api/auth/oauth/google' : undefined} aria-disabled={!session.providers.google} title={session.providers.google ? undefined : 'Set GOOGLE_CLIENT_ID on the server'}>
                 <span className="auth-g">G</span> Continue with Google

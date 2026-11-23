@@ -318,7 +318,7 @@ function EmptyBoard() {
       <h2 className="display">
         Paste or drop <em>anything</em> to start
       </h2>
-      <p className="serif">A link, a photo, a paragraph, some code, an equation, an audio or video file, a PDF. Each one becomes the right card.</p>
+      <p className="read">A link, a photo, a paragraph, some code, an equation, an audio or video file, a PDF. Each one becomes the right card.</p>
       <div className="empty-rules">
         {rows.map(([i, o]) => (
           <div key={i} className="mono">

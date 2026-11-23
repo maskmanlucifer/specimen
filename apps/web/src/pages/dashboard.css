@@ -69,7 +69,8 @@
 }
 .bcard h3 {
   margin: 0;
-  font: 400 21px/1.2 var(--font-serif);
+  font: var(--display-weight) 19px/1.2 var(--font-display);
+  letter-spacing: -0.02em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -102,7 +103,7 @@
   border-radius: var(--r-lg);
   color: var(--muted);
 }
-.bcard-new .serif {
+.bcard-new .read {
   font-size: 18px;
   color: var(--ink-2);
 }
@@ -139,7 +140,7 @@
   align-items: center;
   gap: 12px;
 }
-.dash-table-board .serif {
+.dash-table-board .read {
   font-size: 17px;
 }
 .dash-table-thumb {

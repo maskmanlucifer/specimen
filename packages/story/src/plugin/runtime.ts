@@ -97,7 +97,7 @@ const GUEST = `
 const BASE_CSS = `
 :root{--ink:#1a1a1a;--ink-2:#4a4a4a;--muted:#6b6b6b;--faint:#a69f93;--line:#e7e3dc;--paper:#faf8f4;--surface:#fff;--accent:#1f6f6b;--hot:#e4572e;--grid:#efebe4;color-scheme:light}
 :root[data-theme=dark]{--ink:#ede8df;--ink-2:#c8c1b5;--muted:#a69f93;--faint:#5a544c;--line:#3a3631;--paper:#1b1916;--surface:#24211d;--accent:#5fb3ac;--hot:#f07a55;--grid:#2e2a25;color-scheme:dark}
-html,body{margin:0;height:100%;background:transparent;color:var(--ink);font:12px/1.4 'JetBrains Mono',ui-monospace,monospace;overflow:hidden}
+html,body{margin:0;height:100%;background:transparent;color:var(--ink);font:12px/1.4 'IBM Plex Mono',ui-monospace,monospace;overflow:hidden}
 #root{position:absolute;inset:0}
 `;
 

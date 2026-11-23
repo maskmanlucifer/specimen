@@ -31,7 +31,7 @@ function Account() {
       <div className="set-profile">
         <Avatar text={initials(user.name)} size={56} />
         <div>
-          <div className="serif set-name">{user.name}</div>
+          <div className="read set-name">{user.name}</div>
           <span className="mono muted">@{user.handle}</span>
         </div>
       </div>
@@ -356,7 +356,7 @@ function ImportExport() {
         role="button"
         tabIndex={0}
       >
-        <span className="serif">Drop a Markdown file or folder (.zip), a .json board or a Specimen .zip</span>
+        <span className="read">Drop a Markdown file or folder (.zip), a .json board or a Specimen .zip</span>
         <span className="muted">Headings become sections. Links, images and code blocks become cards.</span>
       </div>
       <input ref={input} type="file" hidden accept=".md,.markdown,.txt,.json,.zip" onChange={(e) => doImport(e.target.files?.[0])} />

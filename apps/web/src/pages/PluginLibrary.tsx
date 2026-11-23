@@ -59,7 +59,7 @@ export default function PluginLibrary() {
               <h1 className="display">
                 Plugins <em>extend</em> the board
               </h1>
-              <p className="serif muted">Each plugin is a card type. In edit mode it shows a live preview. Published, it becomes a numbered figure readers can play with.</p>
+              <p className="read muted">Each plugin is a card type. In edit mode it shows a live preview. Published, it becomes a numbered figure readers can play with.</p>
             </div>
             <Button variant="primary" icon="plus" onClick={() => nav('/plugins/new')}>
               Make a plugin
@@ -98,7 +98,7 @@ export default function PluginLibrary() {
         {s && (
           <aside className="pl-detail">
             <span className="ob-badge mono">{s.manifest.category.slice(0, 3).toUpperCase()}</span>
-            <h2 className="serif">{s.manifest.name}</h2>
+            <h2 className="read">{s.manifest.name}</h2>
             <span className="mono muted">
               v{s.manifest.version} · {s.manifest.author} · {s.manifest.license}
             </span>
@@ -110,7 +110,7 @@ export default function PluginLibrary() {
                 {s.builtIn ? 'View source' : 'Edit'}
               </Link>
             </div>
-            <p className="serif">{s.manifest.long ?? s.manifest.description}</p>
+            <p className="read">{s.manifest.long ?? s.manifest.description}</p>
             <Label>Same plugin, different data</Label>
             <ul className="pl-uses">
               {s.usedIn.map((u, i) => (

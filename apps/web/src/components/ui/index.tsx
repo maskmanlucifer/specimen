@@ -22,7 +22,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 });
 
-/** The italic serif wordmark. */
+/** The wordmark, set in the display face. */
 export function Logo({ size = 24 }: { size?: number }) {
   return (
     <span className="ui-logo" style={{ fontSize: size }}>

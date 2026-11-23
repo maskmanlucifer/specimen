@@ -239,7 +239,7 @@ function summaryOf(c: Card): string {
 }
 
 /**
- * The published story, concept 1c "Editorial Longread": big display serif, generous whitespace,
+ * The published story, concept 1c "Editorial Longread": big display type, generous whitespace,
  * figures break out wide on a dark plate. Tabs switch to the board and an index.
  */
 export function Story({ board, tab: tabProp, onTab }: { board: Board; tab?: StoryTab; onTab?: (t: StoryTab) => void }) {

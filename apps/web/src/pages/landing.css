@@ -33,15 +33,15 @@
 }
 .ld-hero h1 {
   margin: 18px 0 0;
-  font-size: clamp(52px, 7vw, 92px);
-  line-height: 0.95;
+  font-size: clamp(44px, 5.4vw, 76px);
+  line-height: 1;
 }
 .ld-hero-r {
   display: grid;
   gap: 22px;
   padding-bottom: 10px;
 }
-.ld-hero-r p.serif {
+.ld-hero-r p.read {
   margin: 0;
   font-size: 21px;
   line-height: 1.5;
@@ -97,7 +97,7 @@
   font-size: 56px;
   line-height: 1;
 }
-.ld-sec p.serif {
+.ld-sec p.read {
   font-size: 19px;
   line-height: 1.5;
   color: var(--ink-2);

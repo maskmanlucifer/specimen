@@ -15,6 +15,9 @@ import type { Store, StoredHost } from './store';
 
 const run = promisify(execFile);
 
+/** Google Fonts stylesheet for published pages: the same "engineering manual" type as the app. */
+export const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap';
+
 /** Media above this size gets a warning in the publish dialog ("readers on phones will download all of it"). */
 export const LARGE_MEDIA = 20 * 1024 * 1024;
 
@@ -53,7 +56,7 @@ ${cover}
 <meta name="generator" content="Specimen">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="${FONTS_URL}" rel="stylesheet">
 <link rel="stylesheet" href="katex/katex.min.css">
 <link rel="stylesheet" href="reader.css">
 <script>try{if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.dataset.theme='dark'}catch(e){}</script>

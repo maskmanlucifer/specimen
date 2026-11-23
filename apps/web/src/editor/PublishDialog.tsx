@@ -143,7 +143,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         <div className="pub-head">
           <div>
             <h2 className="display">Publish</h2>
-            <div className="serif pub-board">{board.title}</div>
+            <div className="read pub-board">{board.title}</div>
             <div className="mono muted pub-meta">
               {board.publish ? `Published ${new Date(board.publish.at).toLocaleDateString()} → ${board.publish.url}` : 'Not published yet'} · {board.cards.length} cards · source: {storage?.name} › {storage?.root}/{slug}
             </div>

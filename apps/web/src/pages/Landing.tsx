@@ -64,7 +64,7 @@ export default function Landing() {
           </h1>
         </div>
         <div className="ld-hero-r">
-          <p className="serif">Specimen is a research board for one topic at a time. Paste notes, sources, photos, audio and code. Connect what relates. Then publish it as a calm, illustrated page anyone can read and play with.</p>
+          <p className="read">Specimen is a research board for one topic at a time. Paste notes, sources, photos, audio and code. Connect what relates. Then publish it as a calm, illustrated page anyone can read and play with.</p>
           <div className="ld-ctas">
             <Link to={start} className="ui-btn ui-btn--primary ui-btn--lg">
               Start a board, free
@@ -95,7 +95,7 @@ export default function Landing() {
             <Story board={DEMO} tab={tab} onTab={setTab} />
           </StoryEnvContext.Provider>
         </div>
-        <p className="ld-caption serif">The same board, two views. You edit the canvas; readers get the story.</p>
+        <p className="ld-caption read">The same board, two views. You edit the canvas; readers get the story.</p>
       </section>
 
       <section className="ld-sec ld-storage">
@@ -104,7 +104,7 @@ export default function Landing() {
           <h2 className="display">
             Your files never <em>leave</em> you
           </h2>
-          <p className="serif">Specimen is only the editor and the viewer. Boards are open files in a folder you own, so you can leave any time.</p>
+          <p className="read">Specimen is only the editor and the viewer. Boards are open files in a folder you own, so you can leave any time.</p>
         </div>
         <ol className="ld-steps">
           <li>
@@ -156,7 +156,7 @@ export default function Landing() {
           <h2 className="display">
             Small core, <em>open</em> edges
           </h2>
-          <p className="serif">MIT licensed. Twelve built-in card types, everything else is a plugin. Run it on a $5 server or your laptop.</p>
+          <p className="read">MIT licensed. Twelve built-in card types, everything else is a plugin. Run it on a $5 server or your laptop.</p>
           <div className="ld-ctas">
             <a className="ui-btn ui-btn--secondary ui-btn--md" href={REPO}>
               <GitHubMark /> View on GitHub
