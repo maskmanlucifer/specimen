@@ -1485,3 +1485,92 @@
 .pub > * {
   min-width: 0;
 }
+
+/* ---------- Log scrubber ---------- */
+.scrub {
+  position: sticky;
+  /* The log scrolls inside 40 px of padding; stick to the very top edge so rows never show above. */
+  top: -40px;
+  z-index: 2;
+  margin: 24px 0 8px;
+  padding: 12px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: 0 10px 18px -14px rgb(26 26 26 / 0.3), 0 -40px 0 var(--paper);
+}
+.scrub-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+.scrub-axis {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 64px;
+  padding-bottom: 16px;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+}
+.scrub-slot {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--line-2);
+}
+.scrub-slot i {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: var(--line-2);
+  transition: background 0.15s, height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.scrub-slot:hover i {
+  background: var(--muted);
+}
+.scrub-slot.is-on i {
+  background: var(--accent);
+}
+.scrub-slot.is-empty i {
+  background: var(--line);
+}
+.scrub-slot span {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  font-size: 9.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.scrub-knob {
+  position: absolute;
+  top: -4px;
+  bottom: 12px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--hot);
+  pointer-events: none;
+  transition: left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.scrub-knob::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--hot);
+  box-shadow: 0 0 0 3px var(--surface);
+}
+.log-day li.is-flash .log-ev {
+  background: var(--accent-soft);
+  transition: background 0.3s;
+}
