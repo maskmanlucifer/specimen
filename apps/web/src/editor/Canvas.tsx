@@ -117,7 +117,12 @@ export function Canvas({ capture, onOpenPanel, onEmptyHint }: { capture: ReturnT
   const [dropKind, setDropKind] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!dragging.current) setNodes(toNodes(board, selection, uploads, heights));
+    if (dragging.current) return;
+    // Carry `measured` over: React Flow hides a node without it and only re-measures on a resize.
+    setNodes((prev) => {
+      const sizes = new Map(prev.map((n) => [n.id, n.measured]));
+      return toNodes(board, selection, uploads, heights).map((n) => (sizes.get(n.id) ? { ...n, measured: sizes.get(n.id) } : n));
+    });
   }, [board, selection, uploads, heights]);
   useEffect(() => setEdges(toEdges(board, heights)), [board, heights]);
   useEffect(() => setMeasuredHeights(heights), [heights]);
