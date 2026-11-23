@@ -122,7 +122,7 @@
   gap: 8px;
   padding: 18px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--r-card);
   background: var(--surface);
 }
 .ld-steps .mono {
@@ -154,7 +154,7 @@
 .ld-plugin {
   margin: 0;
   border: 1.5px solid var(--ink);
-  border-radius: 10px;
+  border-radius: var(--r-card);
   overflow: hidden;
   background: var(--surface);
 }
@@ -180,7 +180,7 @@
   display: grid;
   gap: 12px;
   padding: 24px;
-  border-radius: 14px;
+  border-radius: var(--r-outer);
   background: var(--plate);
   color: var(--plate-ink);
 }

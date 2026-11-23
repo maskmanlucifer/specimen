@@ -14,7 +14,7 @@
 }
 .set-nav a {
   padding: 8px 12px;
-  border-radius: var(--r);
+  border-radius: var(--r-inner);
   color: var(--ink-2);
   text-decoration: none;
   font-size: 14px;
@@ -84,7 +84,7 @@
   gap: 8px;
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--r-card);
   background: var(--surface);
 }
 .set-card:target {
@@ -124,7 +124,7 @@
   gap: 8px;
   padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--r-card);
   font-size: 13px;
   text-align: center;
 }
@@ -136,7 +136,7 @@
   display: block;
   width: 120px;
   height: 72px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   border: 1px solid var(--line);
 }
 .set-theme--light .set-theme-swatch {
@@ -173,7 +173,7 @@
   place-items: center;
   padding: 32px;
   border: 1px dashed var(--line-2);
-  border-radius: 12px;
+  border-radius: var(--r-card);
   cursor: pointer;
   text-align: center;
   font-size: 13px;
@@ -190,7 +190,7 @@
   gap: 10px;
   align-items: center;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--r-card);
   background: var(--ok-soft);
   color: var(--ok);
   font-size: 13.5px;
@@ -202,7 +202,7 @@
   gap: 16px;
   padding: 16px;
   border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--line));
-  border-radius: 12px;
+  border-radius: var(--r-card);
 }
 .set-danger p {
   margin: 4px 0 0;

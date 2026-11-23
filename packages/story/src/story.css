@@ -259,7 +259,7 @@
 .st-code {
   margin: 8px 0 28px;
   border: 1px solid var(--line);
-  border-radius: var(--r);
+  border-radius: var(--r-inner);
   background: var(--surface);
   padding: 10px 0 12px;
 }
@@ -281,7 +281,7 @@
 .st-video iframe {
   display: block;
   width: 100%;
-  border-radius: var(--r);
+  border-radius: var(--r-inner);
   background: var(--surface-2);
 }
 .st-video iframe {
@@ -301,7 +301,7 @@
   margin: 8px 0 28px;
   padding: 14px 16px;
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-card);
   background: var(--surface);
 }
 .st-play {
@@ -345,7 +345,7 @@
   margin: 8px 0 24px;
   padding: 12px 14px;
   border: 1px solid var(--line);
-  border-radius: var(--r);
+  border-radius: var(--r-inner);
   background: var(--surface);
   color: var(--ink);
   text-decoration: none;
@@ -370,7 +370,7 @@
   color: #fff;
   background: var(--danger);
   padding: 3px 5px;
-  border-radius: 3px;
+  border-radius: var(--r-inset);
 }
 .st-figure {
   margin: 16px auto 36px;
@@ -424,7 +424,7 @@
   cursor: pointer;
   padding: 4px 10px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--r-outer);
   font: 400 12px var(--font-mono);
   color: var(--ink-2);
 }
@@ -469,7 +469,7 @@
   position: absolute;
   background: var(--section);
   border: 1px solid var(--section-line);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-card);
   padding: 8px 10px;
 }
 .st-board-card {
@@ -479,7 +479,7 @@
   padding: 6px 8px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--r);
+  border-radius: var(--r-inner);
   font: 400 11px/1.35 var(--font-ui);
   color: var(--ink-2);
 }

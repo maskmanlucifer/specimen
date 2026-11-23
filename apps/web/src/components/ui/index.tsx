@@ -143,3 +143,8 @@ export function Kbd({ children }: { children: ReactNode }) {
 export function Spinner() {
   return <span className="ui-spinner" aria-label="Loading" />;
 }
+
+/** The small colour square that identifies a card type (menus, ⌘K, log). */
+export function TypeMark({ type }: { type: string }) {
+  return <i className="ui-mark" style={{ background: `var(--t-${type}, var(--faint))` }} aria-hidden />;
+}

@@ -44,9 +44,25 @@
   --display-weight: 500;
   --display-tracking: -0.03em;
 
-  --r-sm: 6px;
-  --r: 8px;
-  --r-lg: 12px;
+  /* Nested radii: each level inside another is one step smaller, so corners stay concentric. */
+  --r-inset: 4px;
+  --r-inner: 8px;
+  --r-card: 12px;
+  --r-outer: 16px;
+
+  /* One colour mark per card type, used for the dot before card labels, menus, ⌘K and the log. */
+  --t-note: #6b6b6b;
+  --t-fact: #3f7350;
+  --t-question: #b0731e;
+  --t-quote: #6d5a9e;
+  --t-link: #2f6db5;
+  --t-image: #1f6f6b;
+  --t-audio: #e4572e;
+  --t-video: #8a3f74;
+  --t-document: #9a3b2e;
+  --t-code: #44546a;
+  --t-math: #4b4fae;
+  --t-figure: #1a1a1a;
   color-scheme: light;
 }
 
@@ -77,6 +93,18 @@
   --danger: #e88b7c;
   --danger-soft: #3a2420;
   --plate: #141210;
+  --t-note: #a69f93;
+  --t-fact: #8cc59c;
+  --t-question: #d9a75b;
+  --t-quote: #ab9bd9;
+  --t-link: #7eaee8;
+  --t-image: #5fb3ac;
+  --t-audio: #f07a55;
+  --t-video: #d08ab9;
+  --t-document: #e88b7c;
+  --t-code: #9fb0c8;
+  --t-math: #9a9df0;
+  --t-figure: #ede8df;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.5);
   --shadow-lg: 0 24px 64px -16px rgb(0 0 0 / 0.6);
   color-scheme: dark;
