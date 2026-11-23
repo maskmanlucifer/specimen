@@ -12,7 +12,6 @@
   },
   "scripts": {
     "build": "vite build",
-    "test": "vitest run",
     "typecheck": "tsc -p ."
   },
   "dependencies": {

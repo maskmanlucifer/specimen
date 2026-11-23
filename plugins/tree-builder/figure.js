@@ -42,12 +42,16 @@ specimen.render(({ root, settings, step, width, height }) => {
   const leafCount = (n) => (n.l ? leafCount(n.l) + leafCount(n.r) : 1);
   const all = f.nodes.reduce((sum, n) => sum + leafCount(n), 0);
   const depthOf = (n) => (n.l ? 1 + Math.max(depthOf(n.l), depthOf(n.r)) : 0);
-  const maxDepth = Math.max(...f.nodes.map(depthOf), 1);
-  const dy = Math.min(56, (h - 50) / maxDepth);
+  // Level height comes from the finished tree, so the last step fits; the current forest is
+  // centred vertically with all leaves on one baseline.
+  const finalDepth = Math.max(depthOf(forestAfter(text, Infinity).nodes[0]), 1);
+  const maxDepth = Math.max(...f.nodes.map(depthOf), 0);
+  const dy = Math.min(56, (h - 50) / finalDepth);
+  const baseline = (h + maxDepth * dy) / 2;
   let x = 16, pts = [];
   for (const n of f.nodes) {
     const span = ((width - 32) * leafCount(n)) / all;
-    pts.push(...layout(n, 0, x, x + span, []).map((p) => ({ ...p, top: h - 24 - depthOf(n) * dy })));
+    pts.push(...layout(n, 0, x, x + span, []).map((p) => ({ ...p, top: baseline - depthOf(n) * dy })));
     x += span;
   }
   const yOf = (p) => p.top + p.depth * dy;

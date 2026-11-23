@@ -73,6 +73,8 @@ export function PluginFrame({ bundle, settings, inputs = {}, step = 0, playing =
         }),
     };
 
+  // The iframe's color-scheme must match its document's, or Chrome paints an opaque backdrop
+  // behind the transparent figure (visible as a dark box on the story's plate).
   return (
     <iframe
       ref={ref}
@@ -80,7 +82,7 @@ export function PluginFrame({ bundle, settings, inputs = {}, step = 0, playing =
       title={bundle.manifest.name}
       sandbox="allow-scripts"
       srcDoc={srcDoc}
-      style={{ width: '100%', height: height ?? bundle.manifest.height, border: 0, display: 'block', pointerEvents: interactive ? 'auto' : 'none', colorScheme: 'normal' }}
+      style={{ width: '100%', height: height ?? bundle.manifest.height, border: 0, display: 'block', pointerEvents: interactive ? 'auto' : 'none', colorScheme: theme }}
     />
   );
 }
