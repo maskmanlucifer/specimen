@@ -26,13 +26,16 @@ function fft(re, im) {
   }
 }
 
+// A short melody (notes with three harmonics and a soft attack) over café-like noise.
 function synthetic() {
   const n = RATE * 10, out = new Float32Array(n);
+  const notes = [440, 494, 523, 587, 659, 587, 523, 659, 784, 698, 659, 587, 523, 494, 440, 523];
+  const len = 0.62;
   for (let i = 0; i < n; i++) {
-    const t = i / RATE;
-    out[i] = 0.5 * Math.sin(2 * Math.PI * (300 + 600 * Math.sin(t * 0.9)) * t) +
-      0.35 * Math.sin(2 * Math.PI * (1400 + 500 * Math.cos(t * 1.3)) * t) +
-      0.25 * (Math.random() - 0.5);
+    const t = i / RATE, k = Math.floor(t / len) % notes.length, local = t - Math.floor(t / len) * len;
+    const env = Math.min(1, local * 30) * Math.exp(-local * 2.2), f = notes[k];
+    out[i] = env * (0.6 * Math.sin(2 * Math.PI * f * t) + 0.35 * Math.sin(4 * Math.PI * f * t) + 0.2 * Math.sin(6 * Math.PI * f * t)) +
+      0.12 * (Math.random() - 0.5);
   }
   return out;
 }
@@ -95,7 +98,7 @@ specimen.render(async ({ root, settings, inputs, theme, width, height }) => {
   canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
   const g = canvas.getContext('2d');
   g.scale(dpr, dpr);
-  const maxBin = Math.floor(a.bins * 0.6); // show 0–3.3 kHz, where music energy lives
+  const maxBin = Math.floor(a.bins * 0.4); // show 0–2.2 kHz, where most melodic energy lives
   const cw = width / a.cols, bh = height / maxBin;
   const dark = theme === 'dark';
   for (let c = 0; c < a.cols; c++) for (let b = 0; b < maxBin; b++) {

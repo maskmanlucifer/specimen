@@ -104,11 +104,12 @@ const escapeScript = (s: string) => s.replace(/<\/script/gi, '<\\/script');
 const escapeStyle = (s: string) => s.replace(/<\/style/gi, '<\\/style');
 
 /**
- * Builds the iframe document for a plugin. The CSP allows inline code only: no network,
+ * Builds the iframe document for a plugin. The CSP allows inline code (and eval, for plugins like
+ * the function plot) but no network,
  * no remote images, no form posts. Combined with `sandbox="allow-scripts"` (no same-origin),
  * a plugin cannot read cookies, storage or the host page.
  */
 export function pluginSrcDoc(bundle: PluginBundle): string {
-  const csp = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:";
+  const csp = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:";
   return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><style>${BASE_CSS}${escapeStyle(bundle.style)}</style></head><body><div id="root"></div><script>${escapeScript(GUEST)}</script><script>${escapeScript(bundle.script)}</script></body></html>`;
 }
