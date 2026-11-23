@@ -13,6 +13,7 @@ import {
   type EdgeChange,
   type Node,
   type NodeChange,
+  type OnConnectEnd,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -21,6 +22,7 @@ import { cx } from '../lib/format';
 import { fileKind } from '../lib/capture';
 import { useBoard } from '../store/board';
 import { useUploads } from '../store/uploads';
+import { sectionPushes, sectionRects } from './layout';
 import { edgeTypes, nodeTypes } from './nodes';
 import type { useCapture } from './useCapture';
 
@@ -33,23 +35,12 @@ function figureNumbers(board: Board): Map<string, number> {
   return out;
 }
 
-/** Section size grown to fit its cards' measured heights, so content never spills out. */
-function fitSection(board: Board, s: Board['sections'][number], heights: Map<string, number>) {
-  let w = s.w;
-  let h = s.h;
-  for (const c of board.cards) {
-    if (c.sectionId !== s.id) continue;
-    w = Math.max(w, c.x + c.w - s.x + 20);
-    h = Math.max(h, c.y + (heights.get(c.id) ?? 0) - s.y + 20);
-  }
-  return { w, h };
-}
-
 function toNodes(board: Board, selection: string[], uploads: ReturnType<typeof useUploads.getState>['uploads'], heights: Map<string, number>): Node[] {
   const figs = figureNumbers(board);
   const sel = new Set(selection);
+  const rects = sectionRects(board, heights);
   const sections: Node[] = board.sections.map((s, i) => {
-    const fit = fitSection(board, s, heights);
+    const fit = rects.get(s.id)!;
     return {
       id: s.id,
       type: 'section',
@@ -62,8 +53,8 @@ function toNodes(board: Board, selection: string[], uploads: ReturnType<typeof u
       height: fit.h,
     };
   });
-  const cards: Node[] = board.cards.map((c) => ({ id: c.id, type: 'card', position: { x: c.x, y: c.y }, data: { card: c, board, figureNo: figs.get(c.id) }, selected: sel.has(c.id), zIndex: 2 }));
-  const ghosts: Node[] = uploads.filter((u) => u.status !== 'done').map((u) => ({ id: u.id, type: 'ghost', position: u.at, data: { upload: u }, draggable: false, selectable: false, zIndex: 3 }));
+  const cards: Node[] = board.cards.map((c) => ({ id: c.id, type: 'card', position: { x: c.x, y: c.y }, data: { card: c, board, figureNo: figs.get(c.id) }, selected: sel.has(c.id), zIndex: sel.has(c.id) ? 3 : 2 }));
+  const ghosts: Node[] = uploads.filter((u) => u.status !== 'done').map((u) => ({ id: u.id, type: 'ghost', position: u.at, data: { upload: u }, draggable: false, selectable: false, zIndex: 4 }));
   return [...sections, ...cards, ...ghosts];
 }
 
@@ -94,6 +85,17 @@ function toEdges(board: Board, heights: Map<string, number>): Edge[] {
 }
 
 /**
+ * Completes a connection dropped anywhere on a card, not only on its small handle dots.
+ * React Flow reports such a drop as invalid; the card under the pointer becomes the target.
+ */
+const connectOnDrop: OnConnectEnd = (e, state) => {
+  if (state.isValid || !state.fromNode) return;
+  const pt = 'changedTouches' in e ? e.changedTouches[0] : e;
+  const id = (document.elementFromPoint(pt.clientX, pt.clientY)?.closest('.react-flow__node') as HTMLElement | null)?.dataset.id;
+  if (id && id !== state.fromNode.id && !id.startsWith('up_')) useBoard.getState().addLink(state.fromNode.id, id);
+};
+
+/**
  * The board canvas. Positions live in the board; while dragging, React Flow's local copy leads
  * and the result is committed once on drop (one undo step, one save).
  */
@@ -115,6 +117,20 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
     if (!dragging.current) setNodes(toNodes(board, selection, uploads, heights));
   }, [board, selection, uploads, heights]);
   useEffect(() => setEdges(toEdges(board, heights)), [board, heights]);
+
+  // When a section grows to fit its cards, move the sections under it down so the gap stays even.
+  useEffect(() => {
+    if (dragging.current) return;
+    const shifts = sectionPushes(board, heights);
+    if (!shifts.size) return;
+    useBoard.getState().change(
+      (b) => {
+        for (const s of b.sections) if (shifts.has(s.id)) s.y += shifts.get(s.id)!;
+        for (const c of b.cards) if (c.sectionId && shifts.has(c.sectionId)) c.y += shifts.get(c.sectionId)!;
+      },
+      { history: false },
+    );
+  }, [board, heights]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => {
@@ -174,7 +190,14 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
     dragging.current = false;
     const moved = new Map<string, { x: number; y: number }>();
     for (const n of dragged) moved.set(n.id, n.position);
-    for (const n of nodes) if (dragStart.current.has(n.id)) moved.set(n.id, n.position);
+    // Cards carried by a dragged section move by exactly the section's delta (React state may lag the pointer).
+    const sec = dragged.find((n) => n.type === 'section');
+    if (sec) {
+      const s0 = dragStart.current.get(sec.id)!;
+      const dx = sec.position.x - s0.x;
+      const dy = sec.position.y - s0.y;
+      for (const [id, p0] of dragStart.current) if (id !== sec.id) moved.set(id, { x: p0.x + dx, y: p0.y + dy });
+    }
     const heights = new Map(nodes.map((n) => [n.id, n.measured?.height ?? 80]));
     const anyMoved = [...moved].some(([id, p]) => {
       const o = board.cards.find((c) => c.id === id) ?? board.sections.find((s) => s.id === id);
@@ -241,6 +264,7 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
         onNodeDrag={onDrag}
         onNodeDragStop={onDragStop}
         onConnect={(c) => c.source && c.target && useBoard.getState().addLink(c.source, c.target)}
+        onConnectEnd={connectOnDrop}
         onDelete={({ nodes: ns, edges: es }) => useBoard.getState().removeIds([...ns.filter((n) => n.type !== 'ghost').map((n) => n.id), ...es.map((e) => e.id)])}
         onNodeDoubleClick={(_, n) => n.type === 'card' && onOpenPanel(n.id)}
         onPaneClick={(e) => {
@@ -249,6 +273,7 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
             setTool('select');
           }
         }}
+        attributionPosition="top-right"
         connectionMode={ConnectionMode.Loose}
         deleteKeyCode={['Backspace', 'Delete']}
         multiSelectionKeyCode={['Shift', 'Meta']}
@@ -260,9 +285,8 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
         maxZoom={2.5}
         fitView
         fitViewOptions={{ padding: 0.08, maxZoom: 1 }}
-        proOptions={{ hideAttribution: true }}
         nodesConnectable
-        elevateNodesOnSelect
+        elevateNodesOnSelect={false}
         onlyRenderVisibleElements={board.cards.length > 150}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1.3} color="var(--dot)" />

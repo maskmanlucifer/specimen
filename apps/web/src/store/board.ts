@@ -9,7 +9,7 @@ const HISTORY = 100;
 /** Card input without the fields the store fills in. */
 export type NewCard = { [K in CardType]: Omit<Extract<Card, { type: K }>, 'id' | 'createdAt' | 'updatedAt' | 'tags' | 'private' | 'sectionId' | 'w'> & Partial<Pick<Card, 'tags' | 'private' | 'sectionId' | 'w'>> }[CardType];
 
-interface EditorState {
+export interface EditorState {
   storageId: string;
   slug: string;
   board: Board | null;
@@ -27,6 +27,11 @@ interface EditorState {
   /** The newer server board when a save hit a revision conflict. */
   conflict: Board | null;
 
+  /**
+   * Loads a board. Reloading the board that is already open (after a publish, for example)
+   * keeps it on screen until the new copy arrives, so open dialogs are not unmounted.
+   * Unsynced local edits from IndexedDB win over the server copy and are saved at once.
+   */
   load: (sid: string, slug: string) => Promise<void>;
   /**
    * Applies a change. `log` adds a research-log entry; `history: false` skips undo (used while dragging).
@@ -44,11 +49,37 @@ interface EditorState {
   removeIds: (ids: string[]) => void;
   /** Recomputes which section each card sits in (by its centre point). */
   assignSections: (ids?: string[]) => void;
+  /**
+   * Saves now. Saves never run in parallel: a call waits for the save in flight, then saves
+   * the current board. A caller that awaits it therefore knows its latest edits reached the
+   * server, or that the failure is visible in {@link EditorState.sync}.
+   */
   flush: () => Promise<void>;
   resolveConflict: (merged: Board) => Promise<void>;
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
+/** The save in flight. Saves never overlap: two PUTs with the same base revision would conflict with each other. */
+let inflight: Promise<void> | null = null;
+
+/** Estimated card height before the canvas has measured it. */
+const EST_H = 120;
+
+/**
+ * Nearest free spot for a new card: tries the requested point, then rings of positions around it,
+ * so new cards never land on top of existing ones.
+ */
+function freeSpot(b: Board, at: { x: number; y: number }, w: number): { x: number; y: number } {
+  const hits = (x: number, y: number) => b.cards.some((c) => x < c.x + c.w + 12 && x + w + 12 > c.x && y < c.y + (c.h ?? EST_H) + 12 && y + EST_H + 12 > c.y);
+  if (!hits(at.x, at.y)) return at;
+  for (let r = 1; r <= 12; r++)
+    for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+      const x = at.x + dx * r * 60;
+      const y = at.y + dy * r * 60;
+      if (!hits(x, y)) return { x, y };
+    }
+  return at;
+}
 
 const sectionAt = (b: Board, c: { x: number; y: number; w: number; h?: number }) => {
   const cx = c.x + c.w / 2;
@@ -65,6 +96,28 @@ export const useBoard = create<EditorState>((set, get) => {
   const scheduleSave = () => {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => get().flush(), SAVE_DELAY);
+  };
+
+  /** One save of the current board against `baseRev`. Called only through `flush`, never in parallel. */
+  const saveOnce = async () => {
+    const { board, storageId, slug, baseRev, unsynced } = get();
+    if (!board || !unsynced || get().sync === 'conflict') return;
+    set({ sync: 'saving' });
+    try {
+      const { board: saved } = await api.saveBoard(storageId, slug, board, baseRev);
+      // Edits made while the request was in flight stay unsynced and trigger another save.
+      const stillDirty = get().board !== board;
+      set({ baseRev: saved.rev, lastSynced: Date.now(), unsynced: stillDirty ? get().unsynced - unsynced : 0, sync: stillDirty ? 'saving' : 'saved' });
+      if (!stillDirty) set({ board: { ...board, rev: saved.rev } });
+      if (stillDirty) scheduleSave();
+      else await offline.clear(storageId, slug);
+    } catch (e) {
+      const err = e as ApiError;
+      if (err.status === 409) set({ sync: 'conflict', conflict: err.body.current as Board });
+      else if (err.reconnect) set({ sync: 'reconnect' });
+      else if (err.offline) set({ sync: 'offline' });
+      else set({ sync: 'error' });
+    }
   };
 
   window.addEventListener('online', () => {
@@ -88,7 +141,6 @@ export const useBoard = create<EditorState>((set, get) => {
 
     load: async (sid, slug) => {
       clearTimeout(saveTimer);
-      // Reloading the open board (after publish, say) keeps it on screen until the new copy arrives.
       const same = get().storageId === sid && get().slug === slug && !!get().board;
       if (!same) set({ storageId: sid, slug, board: null, loadError: null, selection: [], past: [], future: [], conflict: null, unsynced: 0, sync: 'saved' });
       const pending = await offline.get(sid, slug);
@@ -146,7 +198,9 @@ export const useBoard = create<EditorState>((set, get) => {
 
     addCard: (input, at) => {
       const now = Date.now();
-      const card = { tags: [], private: false, w: 240, sectionId: null, ...input, id: uid('c_'), x: Math.round(at.x), y: Math.round(at.y), createdAt: now, updatedAt: now } as Card;
+      const w = input.w ?? 240;
+      const spot = freeSpot(get().board!, at, w);
+      const card = { tags: [], private: false, w, sectionId: null, ...input, id: uid('c_'), x: Math.round(spot.x), y: Math.round(spot.y), createdAt: now, updatedAt: now } as Card;
       get().change(
         (b) => {
           card.sectionId = input.sectionId ?? sectionAt(b, card);
@@ -230,26 +284,10 @@ export const useBoard = create<EditorState>((set, get) => {
 
     flush: async () => {
       clearTimeout(saveTimer);
-      const { board, storageId, slug, baseRev, unsynced } = get();
-      if (!board || !unsynced || get().sync === 'conflict') return;
-      set({ sync: 'saving' });
-      try {
-        const { board: saved } = await api.saveBoard(storageId, slug, board, baseRev);
-        // Edits made while the request was in flight stay unsynced and trigger another save.
-        const stillDirty = get().board !== board;
-        set({ baseRev: saved.rev, lastSynced: Date.now(), unsynced: stillDirty ? get().unsynced - unsynced : 0, sync: stillDirty ? 'saving' : 'saved' });
-        if (!stillDirty) set({ board: { ...board, rev: saved.rev } });
-        if (stillDirty) scheduleSave();
-        else await offline.clear(storageId, slug);
-      } catch (e) {
-        const err = e as ApiError;
-        if (err.status === 409) set({ sync: 'conflict', conflict: err.body.current as Board });
-        else if (err.reconnect) set({ sync: 'reconnect' });
-        else if (err.offline) set({ sync: 'offline' });
-        else set({ sync: 'error' });
-      }
+      while (inflight) await inflight;
+      inflight = saveOnce().finally(() => (inflight = null));
+      await inflight;
     },
-
     resolveConflict: async (merged) => {
       const { storageId, conflict } = get();
       set({ board: merged, conflict: null, sync: 'saving', baseRev: conflict?.rev ?? get().baseRev, unsynced: get().unsynced + 1 });

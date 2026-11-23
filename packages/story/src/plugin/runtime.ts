@@ -50,8 +50,9 @@ const GUEST = `
   }
   addEventListener('error', (e) => post({ type: 'error', text: e.message + (e.lineno ? ' (line ' + e.lineno + ')' : '') }));
   addEventListener('unhandledrejection', (e) => post({ type: 'error', text: String(e.reason && e.reason.message || e.reason) }));
+  /** Calls the plugin's render function. Skipped while the iframe has no size yet (not laid out), which would give negative geometry. */
   const draw = () => {
-    if (!renderFn || !state) return;
+    if (!renderFn || !state || !root.clientWidth || !root.clientHeight) return;
     try {
       renderFn({ root, ...state, width: root.clientWidth, height: root.clientHeight });
     } catch (e) { post({ type: 'error', text: e.message }); }

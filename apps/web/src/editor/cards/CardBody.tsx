@@ -14,6 +14,20 @@ function Head({ left, right }: { left: React.ReactNode; right?: React.ReactNode 
 }
 
 /**
+ * Focuses and selects a field once the current click sequence ends. React Flow focuses the
+ * card node after a click; without the delay, typed letters would reach the canvas shortcuts.
+ *
+ * @returns A cleanup that cancels the pending focus.
+ */
+function focusAfterCanvas(ref: React.RefObject<HTMLTextAreaElement>): () => void {
+  const t = setTimeout(() => {
+    ref.current?.focus();
+    ref.current?.select();
+  }, 0);
+  return () => clearTimeout(t);
+}
+
+/**
  * Plain text that becomes a textarea on double-click. Commits on blur or ⌘↵; Escape cancels.
  * `nodrag` stops the canvas from dragging the card while selecting text.
  */
@@ -25,7 +39,7 @@ function EditableText({ card, className }: { card: CardOf<'note' | 'fact' | 'que
   useEffect(() => {
     if (editing) {
       setDraft(card.text);
-      requestAnimationFrame(() => ref.current?.select());
+      return focusAfterCanvas(ref);
     }
   }, [editing]); // eslint-disable-line react-hooks/exhaustive-deps
   const commit = () => {

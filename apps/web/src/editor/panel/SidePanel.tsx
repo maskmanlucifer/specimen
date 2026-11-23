@@ -193,17 +193,17 @@ function SectionPanel({ section }: { section: Section }) {
   const removeIds = useBoard((s) => s.removeIds);
   return (
     <>
-      <PanelSection title="Section">
+      <div className="panel-body">
         <Field label="Title">
           <LazyText value={section.title} onCommit={(title) => title.trim() && update(section.id, { title: title.trim() })} />
         </Field>
         <Field label="Lead paragraph" hint="Shown under the heading in the published story.">
           <LazyText multiline rows={4} value={section.intro ?? ''} onCommit={(intro) => update(section.id, { intro: intro || undefined })} />
         </Field>
-      </PanelSection>
-      <PanelSection title="Cards">
-        <p className="panel-muted">{board.cards.filter((c) => c.sectionId === section.id).length} cards. Reading order is set in Publish → Trail.</p>
-      </PanelSection>
+        <PanelSection title="Cards">
+          <p className="panel-muted">{board.cards.filter((c) => c.sectionId === section.id).length} cards. Set the reading order in Publish → Reading order.</p>
+        </PanelSection>
+      </div>
       <div className="panel-foot">
         <Button variant="danger" size="sm" icon="trash" onClick={() => removeIds([section.id])}>
           Remove section (keeps cards)
