@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CARD_LABEL, formatBytes, type Board, type Card, type CardType } from '@specimen/schema';
+import { CARD_LABEL, formatBytes, type Board, type Card } from '@specimen/schema';
 import { Button, Dialog, Icon, Kbd, Label, Segmented, StatusDot } from '../components/ui';
 import { cx } from '../lib/format';
 import { useBoard } from '../store/board';
 import { useUploads } from '../store/uploads';
-import type { Tool } from './Canvas';
 
 /** Sync status in the top bar: "● Saved  Google Drive". */
 export function SyncLabel() {
@@ -92,61 +91,6 @@ export function BoardBar({ view, setView, onSearch, onPreview, onPublish }: { vi
         </Button>
       </div>
     </header>
-  );
-}
-
-export const ADDABLE: CardType[] = ['note', 'fact', 'question', 'quote', 'link', 'code', 'math', 'figure', 'image', 'audio', 'video', 'document'];
-
-/** Floating bottom toolbar: select, add, connect, section, upload, record. */
-export function Toolbar({ tool, setTool, onAdd, onUpload, onRecord }: { tool: Tool; setTool: (t: Tool) => void; onAdd: (t: CardType) => void; onUpload: () => void; onRecord: () => void }) {
-  const [menu, setMenu] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!menu) return;
-    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setMenu(false);
-    window.addEventListener('mousedown', close);
-    return () => window.removeEventListener('mousedown', close);
-  }, [menu]);
-  const btn = (t: Tool, icon: 'cursor' | 'connect' | 'section', label: string, key: string) => (
-    <button type="button" className={cx('tb-btn', tool === t && 'is-on')} aria-pressed={tool === t} onClick={() => setTool(t)} title={`${label} (${key})`} aria-label={label}>
-      <Icon name={icon} size={17} />
-    </button>
-  );
-  return (
-    <div className="tb" ref={ref} role="toolbar" aria-label="Canvas tools">
-      {btn('select', 'cursor', 'Select', 'V')}
-      <button type="button" className={cx('tb-btn tb-add', menu && 'is-on')} onClick={() => setMenu(!menu)} aria-haspopup="menu" aria-expanded={menu} aria-label="Add card" title="Add card">
-        <Icon name="plus" size={17} />
-        <Icon name="chevron" size={11} />
-      </button>
-      {btn('connect', 'connect', 'Connect', 'C')}
-      {btn('section', 'section', 'Section', 'S')}
-      <span className="tb-sep" />
-      <button type="button" className="tb-btn" onClick={onUpload} title="Upload files" aria-label="Upload files">
-        <Icon name="upload" size={17} />
-      </button>
-      <button type="button" className="tb-btn" onClick={onRecord} title="Record audio" aria-label="Record audio">
-        <Icon name="mic" size={17} />
-      </button>
-      {menu && (
-        <div className="tb-menu" role="menu">
-          {ADDABLE.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenu(false);
-                onAdd(t);
-              }}
-            >
-              <span className="sp-label">{CARD_LABEL[t]}</span>
-              {t === 'note' && <Kbd>N</Kbd>}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
 

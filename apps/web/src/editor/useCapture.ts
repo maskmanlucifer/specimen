@@ -17,12 +17,12 @@ export function useCapture() {
 
   const undoToast = (text: string) => toast(text, { label: 'Undo ⌘Z', run: () => useBoard.getState().undo() });
 
-  const addText = useCallback(async (raw: string, at: At) => {
+  const addText = useCallback(async (raw: string, at: At, verb: 'Pasted' | 'Added' = 'Pasted') => {
     const { addCard, updateCard } = useBoard.getState();
     const input = classifyText(raw);
     const card = addCard({ ...input, w: input.type === 'code' ? 300 : 240 }, at);
     last.current = card.id;
-    undoToast(`Pasted ${input.type === 'link' ? 'link' : 'text'} → ${CARD_LABEL[card.type]} card`);
+    undoToast(`${verb} ${input.type === 'link' ? 'link' : 'text'} → ${CARD_LABEL[card.type]} card`);
     if (card.type === 'link') {
       const u = await api.unfurl(card.url).catch(() => null);
       if (u) updateCard(card.id, { title: u.title, site: u.site, description: u.description, image: u.image });

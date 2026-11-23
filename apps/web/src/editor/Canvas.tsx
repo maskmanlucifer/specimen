@@ -20,13 +20,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { buildStory, type Board } from '@specimen/schema';
 import { cx } from '../lib/format';
 import { fileKind } from '../lib/capture';
-import { useBoard } from '../store/board';
+import { setMeasuredHeights, useBoard } from '../store/board';
+import { useTools } from '../store/tools';
 import { useUploads } from '../store/uploads';
 import { sectionPushes, sectionRects } from './layout';
 import { edgeTypes, nodeTypes } from './nodes';
 import type { useCapture } from './useCapture';
 
-export type Tool = 'select' | 'connect' | 'section';
 
 /** Figure numbers in story order, so the canvas label matches the published "Fig. n". */
 function figureNumbers(board: Board): Map<string, number> {
@@ -92,14 +92,16 @@ const connectOnDrop: OnConnectEnd = (e, state) => {
   if (state.isValid || !state.fromNode) return;
   const pt = 'changedTouches' in e ? e.changedTouches[0] : e;
   const id = (document.elementFromPoint(pt.clientX, pt.clientY)?.closest('.react-flow__node') as HTMLElement | null)?.dataset.id;
-  if (id && id !== state.fromNode.id && !id.startsWith('up_')) useBoard.getState().addLink(state.fromNode.id, id);
+  if (id && id !== state.fromNode.id && !id.startsWith('up_')) useBoard.getState().addLink(state.fromNode.id, id, useTools.getState().connectLabel);
 };
 
 /**
  * The board canvas. Positions live in the board; while dragging, React Flow's local copy leads
  * and the result is committed once on drop (one undo step, one save).
  */
-export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { tool: Tool; setTool: (t: Tool) => void; capture: ReturnType<typeof useCapture>; onOpenPanel: (id: string) => void; onEmptyHint: boolean }) {
+export function Canvas({ capture, onOpenPanel, onEmptyHint }: { capture: ReturnType<typeof useCapture>; onOpenPanel: (id: string) => void; onEmptyHint: boolean }) {
+  const tool = useTools((s) => s.tool);
+  const setTool = useTools((s) => s.setTool);
   const board = useBoard((s) => s.board)!;
   const selection = useBoard((s) => s.selection);
   const uploads = useUploads((s) => s.uploads);
@@ -117,6 +119,7 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
     if (!dragging.current) setNodes(toNodes(board, selection, uploads, heights));
   }, [board, selection, uploads, heights]);
   useEffect(() => setEdges(toEdges(board, heights)), [board, heights]);
+  useEffect(() => setMeasuredHeights(heights), [heights]);
 
   // When a section grows to fit its cards, move the sections under it down so the gap stays even.
   useEffect(() => {
@@ -173,12 +176,26 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
 
   const onDragStart = (_: unknown, node: Node) => {
     dragging.current = true;
+    // The card being carried floats above everything it passes over.
+    if (node.type === 'card') setNodes((nds) => nds.map((n) => (n.id === node.id ? { ...n, zIndex: 10 } : n)));
     dragStart.current.clear();
     if (node.type === 'section') for (const c of board.cards) if (c.sectionId === node.id) dragStart.current.set(c.id, { x: c.x, y: c.y });
     dragStart.current.set(node.id, { ...node.position });
   };
 
   const onDrag = (_: unknown, node: Node) => {
+    if (node.type === 'card') {
+      // Light up the section the card would join if dropped here.
+      const cx = node.position.x + (node.measured?.width ?? 240) / 2;
+      const cy = node.position.y + (node.measured?.height ?? 80) / 2;
+      const rects = sectionRects(board, heights);
+      const target = board.sections.find((s) => {
+        const r = rects.get(s.id)!;
+        return cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h;
+      })?.id;
+      setNodes((nds) => (nds.some((n) => n.type === 'section' && (n.className === 'is-drop-target') !== (n.id === target)) ? nds.map((n) => (n.type === 'section' ? { ...n, className: n.id === target ? 'is-drop-target' : undefined } : n)) : nds));
+      return;
+    }
     if (node.type !== 'section') return;
     const start = dragStart.current.get(node.id)!;
     const dx = node.position.x - start.x;
@@ -188,6 +205,7 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
 
   const onDragStop = (_: unknown, __: Node, dragged: Node[]) => {
     dragging.current = false;
+    setNodes((nds) => nds.map((n) => (n.className === 'is-drop-target' ? { ...n, className: undefined } : n)));
     const moved = new Map<string, { x: number; y: number }>();
     for (const n of dragged) moved.set(n.id, n.position);
     // Cards carried by a dragged section move by exactly the section's delta (React state may lag the pointer).
@@ -263,7 +281,7 @@ export function Canvas({ tool, setTool, capture, onOpenPanel, onEmptyHint }: { t
         onNodeDragStart={onDragStart}
         onNodeDrag={onDrag}
         onNodeDragStop={onDragStop}
-        onConnect={(c) => c.source && c.target && useBoard.getState().addLink(c.source, c.target)}
+        onConnect={(c) => c.source && c.target && useBoard.getState().addLink(c.source, c.target, useTools.getState().connectLabel)}
         onConnectEnd={connectOnDrop}
         onDelete={({ nodes: ns, edges: es }) => useBoard.getState().removeIds([...ns.filter((n) => n.type !== 'ghost').map((n) => n.id), ...es.map((e) => e.id)])}
         onNodeDoubleClick={(_, n) => n.type === 'card' && onOpenPanel(n.id)}

@@ -65,12 +65,21 @@ let inflight: Promise<void> | null = null;
 /** Estimated card height before the canvas has measured it. */
 const EST_H = 120;
 
+/** Card heights measured by the canvas, so placement knows how tall cards really are. */
+const measured = new Map<string, number>();
+
+/** Called by the canvas whenever it measures cards. */
+export function setMeasuredHeights(h: Map<string, number>) {
+  measured.clear();
+  for (const [k, v] of h) measured.set(k, v);
+}
+
 /**
  * Nearest free spot for a new card: tries the requested point, then rings of positions around it,
  * so new cards never land on top of existing ones.
  */
 function freeSpot(b: Board, at: { x: number; y: number }, w: number): { x: number; y: number } {
-  const hits = (x: number, y: number) => b.cards.some((c) => x < c.x + c.w + 12 && x + w + 12 > c.x && y < c.y + (c.h ?? EST_H) + 12 && y + EST_H + 12 > c.y);
+  const hits = (x: number, y: number) => b.cards.some((c) => x < c.x + c.w + 12 && x + w + 12 > c.x && y < c.y + (measured.get(c.id) ?? c.h ?? EST_H) + 12 && y + EST_H + 12 > c.y);
   if (!hits(at.x, at.y)) return at;
   for (let r = 1; r <= 12; r++)
     for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]) {

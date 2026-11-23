@@ -4,12 +4,14 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CARD_LABEL, cardText, type Card, type CardType, type InstalledPlugin } from '@specimen/schema';
 import { StoryEnvContext } from '@specimen/story';
 import { Palette, usePaletteShortcut, type PaletteGroup, type PaletteItem } from '../components/Palette';
-import { Button, Icon, Label, Spinner } from '../components/ui';
+import { Button, Icon, Label, Spinner, TypeMark } from '../components/ui';
 import { api } from '../lib/api';
 import { usePluginBundles } from '../lib/plugins';
 import { useTheme } from '../lib/theme';
-import { Canvas, useFocusCard, ZoomControl, type Tool } from '../editor/Canvas';
-import { ADDABLE, BoardBar, ConflictDialog, Recorder, SyncBanner, Toolbar, UploadsTray } from '../editor/Chrome';
+import { Canvas, useFocusCard, ZoomControl } from '../editor/Canvas';
+import { BoardBar, ConflictDialog, Recorder, SyncBanner, UploadsTray } from '../editor/Chrome';
+import { ADDABLE, Toolbar } from '../editor/Toolbar';
+import { useTools } from '../store/tools';
 import { LogView } from '../editor/LogView';
 import { SidePanel } from '../editor/panel/SidePanel';
 import { PublishDialog } from '../editor/PublishDialog';
@@ -58,7 +60,8 @@ function Editor() {
   const rf = useReactFlow();
   const focusCard = useFocusCard();
   const capture = useCapture();
-  const [tool, setTool] = useState<Tool>('select');
+  const setTool = useTools((s) => s.setTool);
+  const setComposing = useTools((s) => s.setComposing);
   const [panel, setPanel] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
@@ -148,7 +151,7 @@ function Editor() {
         s.flush();
       } else if (!mod && !e.altKey) {
         const k = e.key.toLowerCase();
-        if (k === 'n') (e.preventDefault(), add('note'));
+        if (k === 'n') (e.preventDefault(), setComposing(true));
         else if (k === 'v') setTool('select');
         else if (k === 'c') setTool('connect');
         else if (k === 's') setTool('section');
@@ -170,7 +173,7 @@ function Editor() {
     run: ({ panel: p }) => (setParams({}), setTimeout(() => (focusCard(c.id), p && setPanel(c.id)), 50)),
   }));
   const groups: PaletteGroup[] = [
-    { heading: 'Add', items: ADDABLE.map((t) => ({ id: `add:${t}`, label: `Add ${CARD_LABEL[t].toLowerCase()}`, icon: '+', hint: t === 'note' ? 'N' : undefined, run: () => add(t) })) },
+    { heading: 'Add', items: ADDABLE.map((t) => ({ id: `add:${t}`, label: `Add ${CARD_LABEL[t].toLowerCase()}`, icon: <TypeMark type={t} />, hint: t === 'note' ? 'N' : undefined, run: () => (t === 'note' ? setComposing(true) : add(t)) })) },
     { heading: 'Cards', items: cardItems },
     {
       heading: 'Go to',
@@ -194,9 +197,9 @@ function Editor() {
         <div className="board-body">
           {view === 'canvas' ? (
             <>
-              <Canvas tool={tool} setTool={setTool} capture={capture} onOpenPanel={setPanel} onEmptyHint />
+              <Canvas capture={capture} onOpenPanel={setPanel} onEmptyHint />
               <ZoomControl />
-              <Toolbar tool={tool} setTool={setTool} onAdd={add} onUpload={() => fileInput.current?.click()} onRecord={() => setRecording(true)} />
+              <Toolbar onAdd={add} onCompose={(text) => capture.addText(text, center(), 'Added')} onUpload={() => fileInput.current?.click()} onRecord={() => setRecording(true)} />
               <UploadsTray />
             </>
           ) : (
