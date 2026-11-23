@@ -1,0 +1,251 @@
+.dash-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 48px;
+}
+.dash-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.dash-title {
+  margin: 0;
+  font-size: 60px;
+  line-height: 1;
+}
+.dash-sub {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.dash-tools {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+.bcard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.bcard:hover {
+  color: inherit;
+  border-color: var(--line-2);
+  box-shadow: var(--shadow);
+}
+.bcard-thumb {
+  height: 188px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.bcard-body {
+  padding: 16px 16px 14px;
+}
+.bcard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.bcard h3 {
+  margin: 0;
+  font: 400 21px/1.2 var(--font-serif);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bcard-meta {
+  margin: 6px 0 18px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.bcard-foot {
+  font-size: 13px;
+}
+.bcard-store {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 13px var(--font-ui);
+}
+.bcard-new {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 300px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  color: var(--muted);
+}
+.bcard-new .serif {
+  font-size: 18px;
+  color: var(--ink-2);
+}
+.bcard-new .mono {
+  font-size: 11px;
+}
+.bcard-new:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.dash-table th {
+  text-align: left;
+  padding: 0 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.dash-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.dash-table tbody tr {
+  cursor: pointer;
+}
+.dash-table tbody tr:hover {
+  background: var(--surface);
+}
+.dash-table-board {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dash-table-board .serif {
+  font-size: 17px;
+}
+.dash-table-thumb {
+  width: 64px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  overflow: hidden;
+  flex: none;
+}
+.dash-empty {
+  margin-top: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.dash-side {
+  padding-top: 52px;
+}
+.dash-activity,
+.dash-places {
+  list-style: none;
+  margin: 12px 0 36px;
+  padding: 0;
+}
+.dash-activity li {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+}
+.dash-activity .mono {
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 2px;
+}
+.dash-activity em {
+  display: block;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.dash-places li {
+  padding: 12px 0 0;
+  border-top: 1px solid var(--line);
+}
+.dash-place-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+}
+.dash-place-row .mono {
+  margin-left: auto;
+  font-size: 11px;
+}
+.dash-reconnect {
+  color: var(--danger);
+  text-decoration: none;
+}
+.dash-note {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.nb {
+  padding: 28px;
+  display: grid;
+  gap: 16px;
+}
+.nb-title {
+  margin: 0;
+  font-size: 38px;
+}
+.nb-path {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.nb-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 1100px) {
+  .dash-page {
+    grid-template-columns: 1fr;
+  }
+  .dash-side {
+    padding-top: 0;
+  }
+}
+@media (max-width: 640px) {
+  .dash-title {
+    font-size: 44px;
+  }
+  .dash-tools > .ui-seg:first-child {
+    order: 3;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .dash-table th:nth-child(n + 3),
+  .dash-table td:nth-child(n + 3) {
+    display: none;
+  }
+}
