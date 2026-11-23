@@ -206,7 +206,7 @@ export function LogView({ onOpen }: { onOpen: (cardId: string) => void }) {
         <h2 className="display log-title">
           Research <em>log</em>
         </h2>
-        <p className="mono muted">
+        <p className="mono muted log-sub">
           {board.cards.length} cards · {events.length} event{events.length === 1 ? '' : 's'}{first ? ` since ${new Date(first.at).toLocaleDateString('en', { day: 'numeric', month: 'short' })}` : ''}
         </p>
         {events.length > 0 && <LogScrubber events={events} current={currentDay} onDay={jumpDay} onEvent={jumpEvent} />}
