@@ -8,3 +8,5 @@ create table if not exists public.google_tokens (
 
 alter table public.google_tokens enable row level security;
 revoke all on public.google_tokens from anon, authenticated;
+-- Projects that do not grant API access to new tables automatically need this for the function.
+grant select, insert, update, delete on public.google_tokens to service_role;
