@@ -538,14 +538,19 @@
 }
 
 .minimap {
-  border: 1px solid var(--accent) !important;
+  border: 1px solid var(--line) !important;
   border-radius: var(--r-inner);
-  background: var(--paper) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow);
   overflow: hidden;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.minimap:hover {
+  opacity: 1;
 }
 .react-flow__minimap {
-  right: 8px;
-  bottom: 8px;
+  margin: 16px;
 }
 
 .drop-hint {
@@ -1589,4 +1594,12 @@
 .empty-art {
   width: 340px;
   margin: 0 auto 20px;
+}
+
+/* React Flow's credit link uses a fixed light background; give it the theme colours. */
+.react-flow__attribution {
+  background: transparent;
+}
+.react-flow__attribution a {
+  color: var(--faint);
 }

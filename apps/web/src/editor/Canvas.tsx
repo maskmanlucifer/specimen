@@ -314,7 +314,7 @@ export function Canvas({ capture, onOpenPanel, onEmptyHint }: { capture: ReturnT
         onlyRenderVisibleElements={board.cards.length > 150}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1.3} color="var(--dot)" />
-        <MiniMap className="minimap" pannable zoomable nodeColor={(n) => (n.type === 'section' ? 'var(--section-line)' : 'var(--line-2)')} maskColor="color-mix(in srgb, var(--paper) 70%, transparent)" nodeBorderRadius={4} />
+        <MiniMap className="minimap" style={{ width: 168, height: 108 }} pannable zoomable nodeColor={(n) => (n.type === 'section' ? 'var(--section-line)' : 'var(--line-2)')} maskColor="color-mix(in srgb, var(--paper) 70%, transparent)" nodeBorderRadius={4} />
       </ReactFlow>
       {dropKind && (
         <div className="drop-hint">
