@@ -173,8 +173,6 @@ function Editor() {
     run: ({ panel: p }) => (setParams({}), setTimeout(() => (focusCard(c.id), p && setPanel(c.id)), 50)),
   }));
   const groups: PaletteGroup[] = [
-    { heading: 'Add', items: ADDABLE.map((t) => ({ id: `add:${t}`, label: `Add ${CARD_LABEL[t].toLowerCase()}`, icon: <TypeMark type={t} />, hint: t === 'note' ? 'N' : undefined, run: () => (t === 'note' ? setComposing(true) : add(t)) })) },
-    { heading: 'Cards', items: cardItems },
     {
       heading: 'Go to',
       items: [
@@ -186,6 +184,8 @@ function Editor() {
         { id: 'go:section', label: 'New section', icon: '+', hint: 'S', run: () => useBoard.getState().addSection(center()) },
       ],
     },
+    { heading: 'Add', items: ADDABLE.map((t) => ({ id: `add:${t}`, label: `Add ${CARD_LABEL[t].toLowerCase()}`, icon: <TypeMark type={t} />, hint: t === 'note' ? 'N' : undefined, run: () => (t === 'note' ? setComposing(true) : add(t)) })) },
+    { heading: 'Cards', items: cardItems },
   ];
   const last = board.cards.find((c) => c.id === capture.last.current);
 
