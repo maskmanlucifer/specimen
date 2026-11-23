@@ -1,0 +1,69 @@
+.iso {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.iso polygon,
+.iso polyline {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.iso-top {
+  fill: var(--surface);
+}
+.iso-left {
+  fill: var(--section);
+}
+.iso-right {
+  fill: var(--surface-2);
+}
+.iso-section .iso-top {
+  fill: var(--section);
+}
+.iso-section .iso-left,
+.iso-section .iso-right {
+  fill: var(--section-line);
+}
+.iso-accent .iso-top {
+  fill: var(--accent-soft);
+}
+.iso-hot .iso-top {
+  fill: var(--hot-soft);
+}
+.iso-line {
+  fill: none;
+}
+.iso-plate {
+  fill: var(--surface);
+}
+.iso-plate-hot {
+  fill: var(--hot);
+  stroke: var(--hot) !important;
+}
+/* The inside of the pulled drawer: dashed outline, to read as empty. */
+.iso-hollow {
+  fill: var(--surface-2);
+  stroke-dasharray: 3 3;
+}
+.iso-text {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  fill: #fff;
+  letter-spacing: 0.04em;
+}
+.iso-callout circle {
+  fill: var(--hot);
+}
+.iso-callout polyline {
+  fill: none;
+  stroke: var(--muted) !important;
+  stroke-width: 1 !important;
+}
+.iso-callout text {
+  font: 500 10.5px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--ink-2);
+}

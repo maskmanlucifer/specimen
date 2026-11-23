@@ -4,6 +4,7 @@ import { sampleBoards, type PluginBundle } from '@specimen/schema';
 import { PluginFrame, Story, StoryEnvContext, type StoryTab } from '@specimen/story';
 import { GitHubMark, Label, Logo, Segmented } from '../components/ui';
 import { useTheme } from '../lib/theme';
+import { MorphTag } from '../components/MorphTag';
 import { useSession } from '../store/session';
 import './landing.css';
 
@@ -64,7 +65,9 @@ export default function Landing() {
           </h1>
         </div>
         <div className="ld-hero-r">
-          <p className="read">Specimen is a research board for one topic at a time. Paste notes, sources, photos, audio and code. Connect what relates. Then publish it as a calm, illustrated page anyone can read and play with.</p>
+          <p className="read">
+            Specimen is a research board for one topic at a time. Paste <MorphTag /> onto it, connect what relates, then publish it as a calm, illustrated page anyone can read and play with.
+          </p>
           <div className="ld-ctas">
             <Link to={start} className="ui-btn ui-btn--primary ui-btn--lg">
               Start a board, free

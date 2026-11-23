@@ -23,6 +23,7 @@ import { fileKind } from '../lib/capture';
 import { setMeasuredHeights, useBoard } from '../store/board';
 import { useTools } from '../store/tools';
 import { useUploads } from '../store/uploads';
+import { IsoTray } from '../components/Iso';
 import { sectionPushes, sectionRects } from './layout';
 import { edgeTypes, nodeTypes } from './nodes';
 import type { useCapture } from './useCapture';
@@ -323,27 +324,15 @@ export function Canvas({ capture, onOpenPanel, onEmptyHint }: { capture: ReturnT
 function EmptyBoard() {
   const storage = useBoard((s) => s.storage);
   const slug = useBoard((s) => s.slug);
-  const rows: [string, string][] = [
-    ['https://…', 'Link'],
-    ['.png .jpg', 'Image'],
-    ['.mp3 .wav', 'Audio'],
-    ['.mp4 / YouTube', 'Video'],
-    ['.pdf', 'Document'],
-    ['$…$', 'Math'],
-  ];
   return (
     <div className="empty-board">
+      <div className="empty-art">
+        <IsoTray />
+      </div>
       <h2 className="display">
         Paste or drop <em>anything</em> to start
       </h2>
       <p className="read">A link, a photo, a paragraph, some code, an equation, an audio or video file, a PDF. Each one becomes the right card.</p>
-      <div className="empty-rules">
-        {rows.map(([i, o]) => (
-          <div key={i} className="mono">
-            <span>{i}</span> → {o}
-          </div>
-        ))}
-      </div>
       <div className="empty-keys mono">
         <span>
           <kbd className="ui-kbd">⌘V</kbd> paste

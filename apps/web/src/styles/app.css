@@ -81,6 +81,10 @@ button {
   white-space: nowrap;
   transition: background 0.12s, border-color 0.12s;
 }
+a.ui-btn,
+a.ui-btn:hover {
+  text-decoration: none;
+}
 .ui-btn--md {
   height: 40px;
   padding: 0 16px;
