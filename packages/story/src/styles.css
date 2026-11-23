@@ -1,0 +1,3 @@
+/* App entry: KaTeX + story styles. The static reader links KaTeX separately (see vite.config.ts). */
+@import 'katex/dist/katex.min.css';
+@import './story.css';
