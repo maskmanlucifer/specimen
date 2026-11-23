@@ -3,7 +3,7 @@ import { STORAGE_BADGE, type StorageKind, type Visibility } from '@specimen/sche
 import { cx } from '../../lib/format';
 import { Icon, type IconName } from './Icon';
 
-export { Icon, GitHubMark } from './Icon';
+export { Icon, GitHubMark, type IconName } from './Icon';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   /** @default 'secondary' */
