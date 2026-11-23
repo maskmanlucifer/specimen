@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CARD_LABEL, formatBytes, type Board, type Card } from '@specimen/schema';
 import { Button, Dialog, Icon, Kbd, Label, Segmented, StatusDot } from '../components/ui';
-import { cx } from '../lib/format';
+import { cx, boardPlace } from '../lib/format';
 import { useBoard } from '../store/board';
 import { useUploads } from '../store/uploads';
 
@@ -63,7 +63,7 @@ export function BoardBar({ view, setView, onSearch, onPreview, onPublish }: { vi
           </h1>
         )}
         <span className="mono">
-          {storage?.name} › {storage?.root}/{board.slug}
+          {storage?.name} › {boardPlace(storage, board.slug)}
         </span>
       </div>
       <div className="bbar-center">
@@ -369,7 +369,7 @@ export function Recorder({ open, onClose, onDone }: { open: boolean; onClose: ()
         </button>
       </div>
       <p className="rec-meta mono">
-        {device} · 48 kHz · mono → {storage?.root}/{slug}/media/{stamp()}.{rec.current ? ext() : 'm4a'}
+        {device} · 48 kHz · mono → {boardPlace(storage, slug)}/media/{stamp()}.{rec.current ? ext() : 'm4a'}
       </p>
     </div>
   );

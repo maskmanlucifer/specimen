@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toasts } from './components/Toasts';
 import { Spinner } from './components/ui';
 import { useTheme } from './lib/theme';
@@ -15,6 +15,7 @@ const PluginLibrary = lazy(() => import('./pages/PluginLibrary'));
 const PluginEditor = lazy(() => import('./pages/PluginEditor'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const SharedPage = lazy(() => import('./pages/SharedPage'));
 
 function Loading() {
   return (
@@ -22,6 +23,13 @@ function Loading() {
       <Spinner />
     </div>
   );
+}
+
+/** The app's start: onboarding on the first visit, then the dashboard. */
+function Home() {
+  const session = useSession((s) => s.session);
+  if (!session) return <Loading />;
+  return <Navigate to={session.onboarded ? '/boards' : '/onboarding'} replace />;
 }
 
 /** Sends signed-out visitors to sign-in, and new instances through onboarding first. */
@@ -37,14 +45,25 @@ function Private({ children }: { children: ReactNode }) {
 export function App() {
   const load = useSession((s) => s.load);
   useTheme();
+  const nav = useNavigate();
   useEffect(() => {
-    load();
-  }, [load]);
+    load().then((session) => {
+      // Back from Google: drop `?code=` from the address and go where sign-in started.
+      if (location.search) history.replaceState(null, '', location.pathname + location.hash);
+      const next = sessionStorage.getItem('specimen-next');
+      if (next && session?.authMode === 'hosted') {
+        sessionStorage.removeItem('specimen-next');
+        nav(next.replace(/^#/, ''), { replace: true });
+      }
+    });
+  }, [load]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<Landing />} />
+        <Route path="/s/:id" element={<SharedPage />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/onboarding" element={<Private><Onboarding /></Private>} />
         <Route path="/boards" element={<Private><Dashboard /></Private>} />

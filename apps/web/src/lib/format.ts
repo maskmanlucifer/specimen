@@ -37,3 +37,11 @@ export function initials(name: string): string {
 export function cx(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(' ');
 }
+
+/**
+ * Where a board's folder sits, for crumbs: `/Specimen/my-board` in Drive, plain `my-board` in this
+ * browser (IndexedDB has no folders a person would recognise).
+ */
+export function boardPlace(storage: { kind: string; root: string } | null | undefined, slug: string): string {
+  return storage && storage.kind !== 'local' ? `${storage.root}/${slug}` : slug;
+}

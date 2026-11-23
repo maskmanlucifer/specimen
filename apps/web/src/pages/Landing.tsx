@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { sampleBoards, type PluginBundle } from '@specimen/schema';
 import { PluginFrame, Story, StoryEnvContext, type StoryTab } from '@specimen/story';
 import { GitHubMark, Label, Logo, Segmented } from '../components/ui';
+import { builtInPlugin } from '../backend/plugins';
+import { REPO_URL } from '../lib/links';
 import { useTheme } from '../lib/theme';
 import { MorphTag } from '../components/MorphTag';
 import { useSession } from '../store/session';
 import './landing.css';
 
-const REPO = 'https://github.com/specimen-dev/specimen';
+const REPO = REPO_URL;
 const DEMO = sampleBoards.find((b) => b.slug === 'how-compression-works')!;
 const SHOWCASE = [
   { id: 'spectrogram-viewer', settings: {}, label: 'Spectrogram viewer', use: 'How Shazam works' },
@@ -17,13 +19,9 @@ const SHOWCASE = [
   { id: 'step-animator', settings: { preset: 'sliding-window' }, label: 'Step-through animator', use: 'LZ77, step by step' },
 ];
 
-/** Built-in plugins, fetched without sign-in for the public demo. */
+/** Built-in plugins for the public demo; they ship inside the app. */
 function usePublicPlugins(ids: string[]) {
-  const [out, setOut] = useState<Record<string, PluginBundle>>({});
-  useEffect(() => {
-    Promise.all(ids.map((id) => fetch(`/api/public/plugins/${id}`).then((r) => (r.ok ? r.json() : null)))).then((list) => setOut(Object.fromEntries(list.filter(Boolean).map((b: PluginBundle) => [b.manifest.id, b]))));
-  }, [ids.join()]); // eslint-disable-line react-hooks/exhaustive-deps
-  return out;
+  return useMemo(() => Object.fromEntries(ids.flatMap((id) => (builtInPlugin(id) ? [[id, builtInPlugin(id)!]] : []))) as Record<string, PluginBundle>, [ids.join()]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 /** Public landing page (4a): the pitch, a live Board/Story demo, storage, plugins and self-hosting. */

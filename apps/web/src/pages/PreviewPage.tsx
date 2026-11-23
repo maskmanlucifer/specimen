@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Board, Card } from '@specimen/schema';
 import { Story, StoryEnvContext } from '@specimen/story';
 import { Button, Icon, Label, Spinner } from '../components/ui';
 import { api } from '../lib/api';
+import { useBoardEnv } from '../lib/media';
 import { usePluginBundles } from '../lib/plugins';
 import { useTheme } from '../lib/theme';
 import './preview.css';
@@ -19,7 +20,7 @@ export default function PreviewPage() {
   }, [sid, slug]);
   const ids = (board?.cards ?? []).filter((c): c is Extract<Card, { type: 'figure' }> => c.type === 'figure').map((c) => c.plugin);
   const plugins = usePluginBundles(ids);
-  const env = useMemo(() => ({ mediaUrl: (p: string) => api.mediaUrl(sid, slug, p), plugins, theme }), [sid, slug, plugins, theme]);
+  const env = useBoardEnv(sid, slug, plugins, theme);
   if (error) return <p className="page">{error}</p>;
   if (!board) return <div className="board-loading"><Spinner /></div>;
   const hidden = board.cards.filter((c) => c.private).length;

@@ -6,6 +6,7 @@ import { StoryEnvContext } from '@specimen/story';
 import { Palette, usePaletteShortcut, type PaletteGroup, type PaletteItem } from '../components/Palette';
 import { Button, Icon, Label, Spinner, TypeMark } from '../components/ui';
 import { api } from '../lib/api';
+import { useBoardEnv } from '../lib/media';
 import { usePluginBundles } from '../lib/plugins';
 import { useTheme } from '../lib/theme';
 import { Canvas, useFocusCard, ZoomControl } from '../editor/Canvas';
@@ -105,7 +106,7 @@ function Editor() {
 
   const pluginIds = useMemo(() => [...new Set((board?.cards ?? []).filter((c) => c.type === 'figure').map((c) => (c as Extract<Card, { type: 'figure' }>).plugin))], [board?.cards]);
   const plugins = usePluginBundles(pluginIds);
-  const env = useMemo(() => ({ mediaUrl: (p: string) => api.mediaUrl(sid, slug, p), plugins, theme }), [sid, slug, plugins, theme]);
+  const env = useBoardEnv(sid, slug, plugins, theme);
 
   const center = useCallback(() => {
     const el = document.querySelector('.canvas')!.getBoundingClientRect();

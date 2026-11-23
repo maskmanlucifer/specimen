@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { formatBytes, type BoardSummary, type HostInfo, type HostKind, type InstalledPlugin, type StorageInfo } from '@specimen/schema';
+import { formatBytes, type BoardSummary, type InstalledPlugin, type StorageInfo } from '@specimen/schema';
+import { cloudConfig } from '../backend/cloud';
+import { CloudSetup } from '../components/CloudSetup';
 import { AppHeader } from '../components/AppHeader';
 import { IsoTray } from '../components/Iso';
 import { Avatar, Button, Icon, Input, Label, Meter, Segmented, StatusDot, StorageBadge, TypeMark, Working, type IconName } from '../components/ui';
@@ -92,39 +94,31 @@ function Account() {
         </Row>
       </Group>
       <Group title="Sign-in">
-        {session.authMode === 'none' && <Row label="No sign-in" desc="This instance runs with AUTH=none: anyone who can reach it is you." />}
-        {session.authMode === 'password' && (
-          <Row label="Password" desc="Set by the server's PASSWORD setting.">
-            <StatusDot tone="ok">On</StatusDot>
+        {session.authMode === 'none' ? (
+          <Row label="No account" desc="Boards live in this browser only. Sign in with Google to keep them in your Drive.">
+            <Link className="ui-btn ui-btn--primary ui-btn--sm" to="/signin?next=/settings/storage">
+              Sign in with Google
+            </Link>
           </Row>
-        )}
-        {user.methods.map((m) => (
-          <Row key={m.kind} label={m.label}>
-            <StatusDot tone="ok">Connected</StatusDot>
-          </Row>
-        ))}
-        {session.authMode === 'hosted' &&
-          (['google', 'github'] as const)
-            .filter((k) => !user.methods.some((m) => m.kind === k) && session.providers[k])
-            .map((k) => (
-              <Row key={k} label={k === 'google' ? 'Google' : 'GitHub'} desc="Not connected">
-                <a className="ui-btn ui-btn--secondary ui-btn--sm" href={`/api/auth/oauth/${k}`}>
-                  Connect
-                </a>
+        ) : (
+          <>
+            {user.methods.map((m) => (
+              <Row key={m.kind} label="Google" desc={m.label}>
+                <StatusDot tone="ok">Signed in</StatusDot>
               </Row>
             ))}
-        {session.authMode !== 'none' && (
-          <Row label="Sign out" desc="On this browser only.">
-            <Button
-              size="sm"
-              onClick={async () => {
-                await api.signOut();
-                location.href = '/signin';
-              }}
-            >
-              Sign out
-            </Button>
-          </Row>
+            <Row label="Sign out" desc="On this browser only. Your Drive boards stay in your Drive.">
+              <Button
+                size="sm"
+                onClick={async () => {
+                  await api.signOut();
+                  location.reload();
+                }}
+              >
+                Sign out
+              </Button>
+            </Row>
+          </>
         )}
       </Group>
     </>
@@ -134,8 +128,11 @@ function Account() {
 function Storage() {
   const [list, setList] = useState<StorageInfo[] | null>(null);
   const [boards, setBoards] = useState<BoardSummary[]>([]);
-  const nav = useNavigate();
-  const reload = () => Promise.all([api.storages(true).then(setList), api.boards().then((b) => setBoards(b.boards))]);
+  const [lastExport, setLastExport] = useState<number | null>(null);
+  const [editing, setEditing] = useState(false);
+  const session = useSession((s) => s.session)!;
+  const cfg = cloudConfig();
+  const reload = () => Promise.all([api.storages(true).then(setList), api.boards().then((b) => setBoards(b.boards)), api.lastExport().then(setLastExport)]);
   useEffect(() => {
     reload();
   }, []);
@@ -144,15 +141,17 @@ function Storage() {
       <Head
         title="Storage"
         action={
-          <Button icon="plus" onClick={() => nav('/onboarding')}>
-            Add storage
-          </Button>
+          session.authMode === 'none' ? (
+            <Link className="ui-btn ui-btn--secondary ui-btn--md" to="/signin?next=/settings/storage">
+              <Icon name="cloud" size={15} /> Add Google Drive
+            </Link>
+          ) : undefined
         }
       >
-        Each board is saved to one of these places. Specimen never keeps a copy.
+        Each board is saved in one of these places. There is no Specimen server and no copy anywhere else.
       </Head>
-      <Group foot="Disconnecting removes Specimen's access only. Your files stay where they are.">
-        {list === null && <Row label={<Working label="Checking connections" />} />}
+      <Group foot="Move a board between places from its Publish dialog or the dashboard.">
+        {list === null && <Row label={<Working label="Checking" />} />}
         {list?.map((s) => {
           const n = boards.filter((b) => b.storageId === s.id).length;
           return (
@@ -167,7 +166,6 @@ function Storage() {
                 <span className="mono">
                   {s.account ? `${s.account} · ` : ''}
                   {s.root} · {n} board{n === 1 ? '' : 's'}
-                  {s.keyHint ? ` · key •••• ${s.keyHint}` : ''}
                 </span>
                 {s.usage && (
                   <span className="sr-usage">
@@ -180,20 +178,10 @@ function Storage() {
                 )}
               </div>
               <div className="sr-ctl">
-                {s.status === 'ok' ? <StatusDot tone="ok">Connected</StatusDot> : <StatusDot tone="danger">{s.status === 'reconnect' ? 'Reconnect needed' : 'Disconnected'}</StatusDot>}
-                {s.status !== 'ok' && ['gdrive', 'dropbox', 'onedrive'].includes(s.kind) && (
-                  <Button size="sm" variant="primary" onClick={() => (location.href = api.connectUrl(s.kind, { id: s.id, root: s.root }))}>
-                    Reconnect
-                  </Button>
-                )}
-                {!s.isDefault && (
-                  <Button size="sm" onClick={() => api.updateStorage(s.id, { isDefault: true }).then(reload)}>
-                    Make default
-                  </Button>
-                )}
-                {s.kind !== 'local' && (
-                  <Button size="sm" variant="danger" onClick={() => confirm(`Disconnect ${s.name}? Files in it stay where they are.`) && api.removeStorage(s.id).then(reload)}>
-                    Disconnect
+                <StatusDot tone="ok">{s.kind === 'local' ? 'On this device' : 'Connected'}</StatusDot>
+                {s.kind === 'local' && (
+                  <Button size="sm" icon="upload" onClick={() => api.exportBrowser().then(() => api.lastExport().then(setLastExport))}>
+                    Export all
                   </Button>
                 )}
               </div>
@@ -201,108 +189,41 @@ function Storage() {
           );
         })}
       </Group>
+      {list?.some((s) => s.kind === 'local') && (
+        <div className={cx('backup', lastExport && Date.now() - lastExport < 7 * 864e5 ? 'is-ok' : 'is-warn')}>
+          <Icon name={lastExport && Date.now() - lastExport < 7 * 864e5 ? 'check' : 'alert'} size={15} />
+          <span>{lastExport ? `Last backup ${new Date(lastExport).toLocaleDateString()}.` : 'No backup yet.'} Boards in this browser are lost if site data is cleared. Export a .zip from time to time.</span>
+        </div>
+      )}
+      <Group title="Your Supabase project" foot="Supabase signs you in with Google and keeps the Drive key in an Edge Function you own.">
+        {editing ? (
+          <div className="sr-pad">
+            <CloudSetup onCancel={() => setEditing(false)} onSaved={() => location.reload()} />
+          </div>
+        ) : (
+          <Row label={cfg ? 'Project' : 'Not set up'} desc={cfg ? <span className="mono">{cfg.url.replace('https://', '')}</span> : 'Needed only for Google Drive.'}>
+            {cfg && <StatusDot tone="ok">Ready</StatusDot>}
+            <Button size="sm" onClick={() => setEditing(true)}>
+              {cfg ? 'Change' : 'Set up'}
+            </Button>
+          </Row>
+        )}
+      </Group>
     </>
   );
 }
 
-const HOSTS: { kind: HostKind; name: string; badge: string; target: string; placeholder: string; token?: string; desc: string }[] = [
-  { kind: 'github', name: 'GitHub Pages', badge: 'GH', target: 'Repository', placeholder: 'owner/specimen-boards', token: 'Token (contents: write)', desc: 'Commits to gh-pages, one folder per board.' },
-  { kind: 'netlify', name: 'Netlify', badge: 'NL', target: 'Site', placeholder: 'my-notes.netlify.app', token: 'Personal access token', desc: 'Deploys all your boards as one site.' },
-  { kind: 'cloudflare', name: 'Cloudflare Pages', badge: 'CF', target: 'Account id / project', placeholder: '8f2c…e41/specimen', token: 'API token (Pages: edit)', desc: 'Deploys with wrangler.' },
-  { kind: 'server', name: 'My own server', badge: 'SV', target: 'rsync target', placeholder: 'me@host:/var/www/boards', desc: 'rsync over SSH with your keys.' },
-  { kind: 'folder', name: 'Folder', badge: 'FD', target: 'Folder path', placeholder: '/Users/me/site/public/boards', desc: 'Writes static copies into any folder, e.g. your site’s public/.' },
-];
-
-/** Middle-truncates long paths so both the start and the end stay readable. */
-function middle(s: string, max = 52): string {
-  return s.length <= max ? s : `${s.slice(0, Math.ceil(max / 2) - 1)}…${s.slice(-Math.floor(max / 2))}`;
-}
-
-/** Inline connect form that opens inside a host row (no browser prompts). */
-function HostForm({ def, onSaved, onCancel }: { def: (typeof HOSTS)[number]; onSaved: (h: HostInfo) => void; onCancel: () => void }) {
-  const [target, setTarget] = useState('');
-  const [token, setToken] = useState('');
-  const [busy, setBusy] = useState(false);
-  return (
-    <form
-      className="host-form"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
-        try {
-          onSaved(await api.saveHost({ kind: def.kind, name: def.name, target: target.trim(), token: token.trim() || undefined }));
-        } catch (err) {
-          toast((err as Error).message);
-          setBusy(false);
-        }
-      }}
-    >
-      <label>
-        <span className="sp-label">{def.target}</span>
-        <Input mono autoFocus value={target} onChange={(e) => setTarget(e.target.value)} placeholder={def.placeholder} />
-      </label>
-      {def.token && (
-        <label>
-          <span className="sp-label">{def.token}</span>
-          <Input mono type="password" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Encrypted on this server" />
-        </label>
-      )}
-      <div className="host-form-actions">
-        <Button size="sm" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button size="sm" type="submit" variant="primary" disabled={busy || !target.trim() || (!!def.token && !token.trim())}>
-          {busy ? <Working label="Saving" /> : `Connect ${def.name}`}
-        </Button>
-      </div>
-    </form>
-  );
-}
-
 function Publishing() {
-  const [hosts, setHosts] = useState<HostInfo[]>([]);
   const [vis, setVis] = useState<'published' | 'unlisted'>('unlisted');
-  const [opening, setOpening] = useState<HostKind | null>(null);
   useEffect(() => {
-    api.hosts().then(setHosts);
     api.settings().then((s) => setVis(s.defaultVisibility));
   }, []);
   return (
     <>
-      <Head title="Publishing">Where static copies of your boards go, and how new boards start out.</Head>
-      <Group title="Hosts">
-        {HOSTS.map((def) => {
-          const h = hosts.find((x) => x.kind === def.kind);
-          return (
-            <div key={def.kind} className={cx('sr-wrap', opening === def.kind && 'is-open')}>
-              <Row lead={<span className="host-badge mono">{def.badge}</span>} label={def.name} desc={h ? <span className="mono" title={h.target}>{middle(h.target)}</span> : def.desc}>
-                {h ? (
-                  <>
-                    <StatusDot tone={h.connected ? 'ok' : 'muted'}>{h.connected ? 'Connected' : 'Not connected'}</StatusDot>
-                    <button type="button" className="sr-x" aria-label={`Remove ${def.name}`} onClick={() => api.removeHost(h.id).then(() => setHosts(hosts.filter((x) => x.id !== h.id)))}>
-                      <Icon name="x" size={13} />
-                    </button>
-                  </>
-                ) : opening !== def.kind ? (
-                  <Button size="sm" onClick={() => setOpening(def.kind)}>
-                    {def.kind === 'server' || def.kind === 'folder' ? 'Add' : 'Connect'}
-                  </Button>
-                ) : null}
-              </Row>
-              {opening === def.kind && (
-                <HostForm
-                  def={def}
-                  onCancel={() => setOpening(null)}
-                  onSaved={(saved) => {
-                    setHosts([...hosts, saved]);
-                    setOpening(null);
-                    toast(`${def.name} connected`);
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
+      <Head title="Publishing">Two ways to share a board. Choose one in the Publish dialog of any board.</Head>
+      <Group title="Ways to publish">
+        <Row lead={<span className="host-badge mono">GD</span>} label="Share link" desc="A public copy in your Google Drive. Readers open the link without signing in. Needs the board in Google Drive." />
+        <Row lead={<span className="host-badge mono">ZIP</span>} label="Static site" desc="Downloads plain HTML, JS and media. Put the folder on any host, for example a GitHub Pages repo." />
       </Group>
       <Group title="Defaults">
         <Row label="Visibility of new boards" desc="Unlisted boards are reachable only by their link.">
@@ -316,7 +237,6 @@ function Publishing() {
             ]}
           />
         </Row>
-        <Row label="Custom domains" desc={hosts.some((h) => h.domain) ? hosts.filter((h) => h.domain).map((h) => h.domain).join(' · ') : 'Set a domain in the Publish dialog of any board.'} />
       </Group>
     </>
   );
@@ -455,7 +375,7 @@ function ImportExport() {
   return (
     <>
       <Head title="Import and export">Boards are open files: take them anywhere, bring notes in from anywhere.</Head>
-      <Group title="Export" foot="board.json + media/ + plugins/ + a static HTML copy, in one .zip.">
+      <Group title="Export" foot="board.json and media/: the open format. Import it here or open it in any editor.">
         <Row label="Board">
           <select className="ui-input sr-select" value={pick} onChange={(e) => setPick(e.target.value)}>
             {boards.map((b) => (
@@ -464,9 +384,14 @@ function ImportExport() {
               </option>
             ))}
           </select>
-          <a className="ui-btn ui-btn--primary ui-btn--sm" href={pick ? api.exportUrl(sid, slug) : undefined} download>
+          <Button size="sm" variant="primary" disabled={!pick} onClick={() => api.exportBoard(sid, slug).catch((e) => toast((e as Error).message))}>
             Download .zip
-          </a>
+          </Button>
+        </Row>
+        <Row label="Everything in this browser" desc="Every board, media file and plugin stored in this browser, in one .zip. Use it as a backup.">
+          <Button size="sm" icon="upload" onClick={() => api.exportBrowser().catch((e) => toast((e as Error).message))}>
+            Export all
+          </Button>
         </Row>
       </Group>
       <Group title="Import">
@@ -511,17 +436,17 @@ function Danger() {
       <Head title="Danger zone">Actions here cannot be undone.</Head>
       <div className="safe">
         <Icon name="check" size={15} />
-        Your files in storage stay safe. Nothing here deletes boards or media from Google Drive, Dropbox, R2 or OneDrive.
+        Nothing here deletes boards or media from your Google Drive.
       </div>
       <Group tone="danger">
-        <Row label="Disconnect all storage" desc="Removes Specimen's access tokens. You can reconnect later.">
-          <Button size="sm" variant="danger" onClick={() => confirm('Disconnect every storage except the local folder?') && api.disconnectAll().then(() => toast('Disconnected'))}>
-            Disconnect all
+        <Row label="Disconnect Google" desc={session.authMode === 'hosted' ? 'Revokes Drive access and deletes the stored key in your Supabase. You can sign in again later.' : 'Not signed in.'}>
+          <Button size="sm" variant="danger" disabled={session.authMode !== 'hosted'} onClick={() => confirm('Disconnect Google? Drive boards stay in your Drive.') && api.disconnectGoogle().then(() => location.reload())}>
+            Disconnect
           </Button>
         </Row>
-        <Row label="Delete account" desc={session.authMode === 'none' ? 'Not available: this instance has no sign-in.' : 'Deletes your sign-in and profile. Published copies on your hosts are not removed.'}>
-          <Button size="sm" variant="danger" disabled={session.authMode === 'none'} onClick={() => confirm('Delete your account? This cannot be undone.') && api.deleteMe().then(() => (location.href = '/'))}>
-            Delete account
+        <Row label="Clear this browser" desc="Deletes every board, media file, plugin and setting stored in this browser. Export first if you need them.">
+          <Button size="sm" variant="danger" onClick={() => confirm('Delete everything stored in this browser? This cannot be undone. Export a backup first if you need it.') && api.clearBrowser()}>
+            Clear data
           </Button>
         </Row>
       </Group>

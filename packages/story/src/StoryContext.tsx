@@ -7,8 +7,11 @@ import type { PluginInputData } from './plugin/runtime';
  * them at files next to `index.html`.
  */
 export interface StoryEnv {
-  /** Board-relative media path (`media/x.mp3`) → URL the browser can load. */
-  mediaUrl: (path: string) => string;
+  /**
+   * Board-relative media path (`media/x.mp3`) → URL the browser can load. Returns `undefined`
+   * while the file is still loading (the app reads media from IndexedDB or Drive).
+   */
+  mediaUrl: (path: string) => string | undefined;
   /** Plugin bundles by id, already loaded. */
   plugins: Record<string, PluginBundle>;
   theme: 'light' | 'dark';
@@ -29,7 +32,7 @@ export function useMedia() {
  * Default input loader: fetches media bytes for audio/video inputs and passes text for the rest.
  * Works in the app and in the static export because it uses {@link StoryEnv.mediaUrl}.
  */
-export async function defaultLoadInputs(board: Board, inputs: Record<string, string>, mediaUrl: (p: string) => string): Promise<Record<string, PluginInputData>> {
+export async function defaultLoadInputs(board: Board, inputs: Record<string, string>, mediaUrl: (p: string) => string | undefined | Promise<string | undefined>): Promise<Record<string, PluginInputData>> {
   const out: Record<string, PluginInputData> = {};
   await Promise.all(
     Object.entries(inputs).map(async ([key, cardId]) => {
@@ -41,7 +44,8 @@ export async function defaultLoadInputs(board: Board, inputs: Record<string, str
       if (card.type === 'code') data.text = card.code;
       if ((card.type === 'audio' || card.type === 'video') && !/^https?:\/\/(www\.)?(youtube|youtu\.be|vimeo)/.test(card.src)) {
         data.duration = card.duration;
-        const res = await fetch(/^(https?:|blob:|data:)/.test(card.src) ? card.src : mediaUrl(card.src)).catch(() => null);
+        const url = /^(https?:|blob:|data:)/.test(card.src) ? card.src : await mediaUrl(card.src);
+        const res = url ? await fetch(url).catch(() => null) : null;
         if (res?.ok) data.bytes = await res.arrayBuffer();
       }
       out[key] = data;

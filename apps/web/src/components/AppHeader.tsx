@@ -15,7 +15,7 @@ export function AppHeader({ onSearch }: { onSearch?: () => void }) {
       <nav className="app-nav">
         <NavLink to="/boards">Boards</NavLink>
         <NavLink to="/plugins">Plugins</NavLink>
-        <a href="https://github.com/specimen-dev/specimen#readme" target="_blank" rel="noreferrer">
+        <a href="https://github.com/maskmanlucifer/specimen#readme" target="_blank" rel="noreferrer">
           Docs
         </a>
       </nav>

@@ -11,7 +11,7 @@ export type StorageKind = 'local' | 'gdrive' | 'dropbox' | 'onedrive' | 's3' | '
 
 /** Two-letter badge shown next to a storage name in the design ("GD", "R2"…). */
 export const STORAGE_BADGE: Record<StorageKind, string> = {
-  local: 'LF',
+  local: 'BR',
   gdrive: 'GD',
   dropbox: 'DB',
   onedrive: 'OD',
@@ -22,7 +22,7 @@ export const STORAGE_BADGE: Record<StorageKind, string> = {
 };
 
 export const STORAGE_NAME: Record<StorageKind, string> = {
-  local: 'Local folder',
+  local: 'This browser',
   gdrive: 'Google Drive',
   dropbox: 'Dropbox',
   onedrive: 'OneDrive',

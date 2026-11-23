@@ -1,21 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { formatBytes, orderedSections, type HostInfo, type HostKind, type PublicFile } from '@specimen/schema';
-import { Button, Dialog, Field, Icon, Input, Label, Segmented, Working } from '../components/ui';
+import { formatBytes, orderedSections, type PublicFile } from '@specimen/schema';
+import { Button, Dialog, Field, Icon, Label, Segmented, Working } from '../components/ui';
 import { api } from '../lib/api';
-import { cx } from '../lib/format';
+import { cx, boardPlace } from '../lib/format';
 import { useBoard } from '../store/board';
 import { toast } from '../store/toast';
 
 const LARGE = 20 * 1024 * 1024;
 
-const HOST_KINDS: { kind: HostKind; label: string; target: string; placeholder: string; token?: string; help: string }[] = [
-  { kind: 'github', label: 'GitHub Pages', target: 'Repository', placeholder: 'owner/specimen-boards', token: 'Token (contents: write)', help: 'Commits to the gh-pages branch, one folder per board.' },
-  { kind: 'netlify', label: 'Netlify', target: 'Site', placeholder: 'my-notes.netlify.app', token: 'Personal access token', help: 'Deploys all your boards on this site.' },
-  { kind: 'cloudflare', label: 'Cloudflare', target: 'Account id / project', placeholder: '8f2c…e41/specimen', token: 'API token (Pages: edit)', help: 'Uses wrangler pages deploy.' },
-  { kind: 'server', label: 'My server', target: 'rsync target', placeholder: 'me@host:/var/www/boards', help: 'Uses rsync over SSH with your keys.' },
-  { kind: 'folder', label: 'Folder', target: 'Folder path', placeholder: '/Users/me/site/public/boards', help: 'Writes a static copy into any folder, e.g. your own site’s public/ folder.' },
-];
 
 /**
  * Publish (design 3c): where the published board lives, reading order, the files that become
@@ -26,46 +19,25 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
   const board = useBoard((s) => s.board)!;
   const storage = useBoard((s) => s.storage);
   const { storageId, slug, change, flush, load } = useBoard.getState();
-  const [hosts, setHosts] = useState<HostInfo[]>([]);
   const [files, setFiles] = useState<PublicFile[]>([]);
-  const [mode, setMode] = useState<'share' | 'host'>(board.publish && board.publish.target !== 'share' ? 'host' : 'share');
-  const [kind, setKind] = useState<HostKind>('github');
+  const onDrive = storageId === 'gdrive';
+  const [mode, setMode] = useState<'share' | 'folder'>(onDrive && board.publish?.target !== 'folder' ? 'share' : 'folder');
   const [visibility, setVisibility] = useState<'published' | 'unlisted'>(board.visibility === 'published' ? 'published' : 'unlisted');
-  const [domain, setDomain] = useState('');
-  const [hostForm, setHostForm] = useState({ target: '', token: '' });
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
 
   useEffect(() => {
-    api.hosts().then((h) => {
-      setHosts(h);
-      const current = h.find((x) => x.id === board.publish?.target);
-      if (current) {
-        setKind(current.kind);
-        setDomain(current.domain ?? '');
-      }
-    });
     flush().then(() => api.publicFiles(storageId, slug).then(setFiles));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const host = hosts.find((h) => h.kind === kind);
-  const def = HOST_KINDS.find((h) => h.kind === kind)!;
   const sections = orderedSections(board);
   const privateCount = board.cards.filter((c) => c.private).length;
   const included = files.filter((f) => !board.excludeMedia.includes(f.path));
   const total = included.reduce((a, f) => a + f.size, 0);
   const large = included.filter((f) => f.size > LARGE);
 
-  const url = useMemo(() => {
-    if (mode === 'share') return `${location.origin}/s/${storageId}/${slug}/`;
-    if (domain) return `https://${domain.replace(/^https?:\/\//, '')}/${slug}/`;
-    if (!host) return '';
-    if (kind === 'github') return `https://${host.target.split('/')[0]}.github.io/${host.target.split('/')[1]}/${slug}/`;
-    if (kind === 'netlify') return `https://${host.target.includes('.') ? host.target : `${host.target}.netlify.app`}/${slug}/`;
-    if (kind === 'cloudflare') return `https://${host.target.split('/')[1]}.pages.dev/${slug}/`;
-    return `${host.target.replace(/\/$/, '')}/${slug}/`;
-  }, [mode, domain, host, kind, storageId, slug]);
+  const url = mode === 'share' ? (board.publish?.target === 'share' ? board.publish.url : 'A Google Drive link, made when you publish') : `Downloads ${slug}-site.zip`;
 
   const moveSection = (id: string, before: string) => {
     if (id === before) return;
@@ -74,21 +46,11 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
     change((b) => void (b.trail = order));
   };
 
-  const saveHost = async () => {
-    try {
-      const h = await api.saveHost({ kind, name: def.label, target: hostForm.target.trim(), token: hostForm.token.trim() || undefined, domain: domain || undefined });
-      setHosts([...hosts.filter((x) => x.id !== h.id), h]);
-      toast(`${def.label} connected`);
-    } catch (e) {
-      toast((e as Error).message);
-    }
-  };
-
   const publish = async (vis: 'published' | 'unlisted' = visibility) => {
     setBusy(true);
     try {
       await flush();
-      const res = await api.publish(storageId, slug, { via: mode === 'share' ? 'share' : host!.id, visibility: vis, domain: domain || undefined });
+      const res = await api.publish(storageId, slug, { via: mode, visibility: vis });
       setResult(res.url);
       await load(storageId, slug);
     } catch (e) {
@@ -110,6 +72,26 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
       setBusy(false);
     }
   };
+
+  if (result && mode === 'folder')
+    return (
+      <Dialog open onClose={onClose} label="Static site downloaded" width={560}>
+        <div className="pub pub-done">
+          <Label tone="accent">Static site</Label>
+          <h2 className="display">
+            Site <em>downloaded</em>
+          </h2>
+          <p className="muted">
+            Unzip <span className="mono">{slug}-site.zip</span>. The <span className="mono">{slug}/</span> folder is the whole page: open its index.html, or copy the folder into any static host, such as your GitHub Pages repo.
+          </p>
+          <div className="pub-actions">
+            <Button variant="primary" onClick={onClose}>
+              Done
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+    );
 
   if (result)
     return (
@@ -165,7 +147,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
             <h2 className="display">Publish</h2>
             <div className="read pub-board">{board.title}</div>
             <div className="mono muted pub-meta">
-              {board.publish ? `Published ${new Date(board.publish.at).toLocaleDateString()} → ${board.publish.url}` : 'Not published yet'} · {board.cards.length} cards · source: {storage?.name} › {storage?.root}/{slug}
+              {board.publish ? `Published ${new Date(board.publish.at).toLocaleDateString()} → ${board.publish.url}` : 'Not published yet'} · {board.cards.length} cards · source: {storage?.name} › {boardPlace(storage, slug)}
             </div>
           </div>
           <button type="button" className="panel-close" aria-label="Close" onClick={onClose}>
@@ -175,47 +157,42 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
 
         <Label>Where the published board lives</Label>
         <div className="pub-modes">
-          <button type="button" className={cx('pub-mode', mode === 'share' && 'is-on')} onClick={() => setMode('share')}>
-            <strong>Share links from your {storage?.name}</strong>
-            <span>Simplest. This Specimen server reads the published copy from your storage and shows it to readers. Popular boards use your storage bandwidth.</span>
+          <button type="button" className={cx('pub-mode', mode === 'share' && 'is-on')} onClick={() => setMode('share')} disabled={!onDrive}>
+            <strong>Share link</strong>
+            <span>Readers open a link, no sign-in. The public copy lives in your Google Drive, in this board's published/ folder.</span>
           </button>
-          <button type="button" className={cx('pub-mode', mode === 'host' && 'is-on')} onClick={() => setMode('host')}>
-            <strong>Publish a static copy to a host</strong>
-            <span>Fast and durable. Specimen builds plain HTML and pushes it. Your {storage?.name} stays the source.</span>
+          <button type="button" className={cx('pub-mode', mode === 'folder' && 'is-on')} onClick={() => setMode('folder')}>
+            <strong>Download a static site</strong>
+            <span>A zip of plain HTML, JS and media. Put the folder on any host, for example a GitHub Pages repo.</span>
           </button>
         </div>
-
-        {mode === 'host' && (
-          <div className="pub-host">
-            <Segmented size="sm" value={kind} onChange={setKind} options={HOST_KINDS.map((h) => ({ value: h.kind, label: h.label }))} />
-            {host ? (
-              <div className="pub-fields">
-                <Field label={def.target}>
-                  <Input mono value={host.target} readOnly />
-                </Field>
-                <Field label="Custom domain" hint="Optional">
-                  <Input mono value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="notes.example.dev" />
-                </Field>
-              </div>
-            ) : (
-              <div className="pub-fields">
-                <Field label={def.target} hint={def.help}>
-                  <Input mono value={hostForm.target} onChange={(e) => setHostForm({ ...hostForm, target: e.target.value })} placeholder={def.placeholder} />
-                </Field>
-                {def.token && (
-                  <Field label={def.token} hint="Encrypted on this server; never shown again.">
-                    <Input mono type="password" value={hostForm.token} onChange={(e) => setHostForm({ ...hostForm, token: e.target.value })} />
-                  </Field>
-                )}
-                <Field label="Custom domain" hint="Optional">
-                  <Input mono value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="notes.example.dev" />
-                </Field>
-                <Button size="sm" onClick={saveHost} disabled={!hostForm.target.trim() || (!!def.token && !hostForm.token.trim())}>
-                  Connect {def.label}
-                </Button>
-              </div>
-            )}
-          </div>
+        {!onDrive && (
+          <p className="pub-note">
+            <Icon name="alert" size={14} /> Share links need the board in Google Drive. This board is in {storage?.name ?? 'this browser'}.{' '}
+            <button
+              type="button"
+              className="aed-link"
+              disabled={busy}
+              onClick={async () => {
+                const session = await api.session();
+                if (session.authMode !== 'hosted') return nav('/signin?next=' + encodeURIComponent(`/b/${storageId}/${slug}`));
+                setBusy(true);
+                try {
+                  await flush();
+                  const r = await api.moveBoard(storageId, slug, 'gdrive');
+                  toast('Moved to Google Drive');
+                  onClose();
+                  nav(`/b/gdrive/${r.board.slug}`);
+                } catch (e) {
+                  toast((e as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Move it to Google Drive
+            </button>
+          </p>
         )}
 
         <div className="pub-row">
@@ -310,7 +287,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         </div>
 
         <p className="pub-private">
-          <Icon name="lock" size={14} /> {privateCount} card{privateCount === 1 ? '' : 's'} marked private stay private. Your {storage?.name}{storage?.name.toLowerCase().endsWith('folder') ? '' : ' folder'} is never made public.
+          <Icon name="lock" size={14} /> {privateCount} card{privateCount === 1 ? '' : 's'} marked private stay private. {storage?.kind === 'local' ? 'Nothing else in this browser' : `The rest of your ${storage?.name ?? 'storage'}`} is ever made public.
         </p>
 
         <div className="pub-foot">
@@ -319,8 +296,8 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
           </Button>
           <div className="pub-foot-r">
             <Button onClick={() => nav(`/b/${storageId}/${slug}/preview`)}>Preview as reader</Button>
-            <Button variant="primary" onClick={() => publish()} disabled={busy || (mode === 'host' && !host)}>
-              {busy ? <Working label="Publishing" /> : mode === 'share' ? 'Publish share link' : `Publish to ${def.label}`}
+            <Button variant="primary" onClick={() => publish()} disabled={busy || (mode === 'share' && !onDrive)}>
+              {busy ? <Working label="Publishing" /> : mode === 'share' ? 'Publish share link' : 'Download static site'}
             </Button>
           </div>
         </div>

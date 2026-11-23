@@ -375,7 +375,7 @@ export function Story({ board, tab: tabProp, onTab, rail = true }: { board: Boar
         </div>
       )}
       <footer className="st-foot">
-        <a href="https://github.com/specimen-dev/specimen" target="_blank" rel="noreferrer">
+        <a href="https://github.com/maskmanlucifer/specimen" target="_blank" rel="noreferrer">
           Made with Specimen (open source)
         </a>
       </footer>

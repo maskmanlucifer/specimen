@@ -211,7 +211,7 @@ export default function PluginEditor() {
             </button>
           ))}
           <p className="muted">Plain HTML, JS and SVG. No build step.</p>
-          <a className="mono" href="https://github.com/specimen-dev/specimen/blob/main/docs/plugins.md" target="_blank" rel="noreferrer">
+          <a className="mono" href="https://github.com/maskmanlucifer/specimen/blob/main/docs/plugins.md" target="_blank" rel="noreferrer">
             Plugin API docs ↗
           </a>
         </aside>

@@ -508,3 +508,29 @@
 .dash-row > .ui-pill {
   justify-self: start;
 }
+/* No-account notice: data lives in this browser only. */
+.dash-local {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: var(--r-card);
+  background: var(--warn-soft);
+}
+.dash-local p {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.dash-local p svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--warn);
+}
+.dash-local-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

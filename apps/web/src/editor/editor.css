@@ -1603,3 +1603,23 @@
 .react-flow__attribution a {
   color: var(--faint);
 }
+.pub-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -6px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.pub-note svg {
+  color: var(--warn);
+}
+.pub-mode:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pub-trail li.panel-muted {
+  display: block;
+  cursor: default;
+}

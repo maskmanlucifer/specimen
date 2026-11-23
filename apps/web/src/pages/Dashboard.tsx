@@ -413,7 +413,23 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
-            <p className="dash-note">Specimen keeps no copies. Boards are plain JSON and media files in these folders.</p>
+            <p className="dash-note">There is no Specimen server. Boards are plain JSON and media files in these places.</p>
+            {storages.length === 1 && storages[0].kind === 'local' && (
+              <div className="dash-local">
+                <p>
+                  <Icon name="alert" size={14} />
+                  <span>Boards in this browser are lost if site data is cleared. Keep a backup, or move them to your Google Drive.</span>
+                </p>
+                <div className="dash-local-actions">
+                  <Button size="sm" icon="upload" onClick={() => api.exportBrowser().then(() => toast('Backup downloaded'))}>
+                    Export all
+                  </Button>
+                  <Link className="ui-btn ui-btn--secondary ui-btn--sm" to="/signin">
+                    <Icon name="cloud" size={14} /> Use Google Drive
+                  </Link>
+                </div>
+              </div>
+            )}
           </section>
         </aside>
       </div>

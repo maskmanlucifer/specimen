@@ -1,138 +1,93 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Field, GitHubMark, Input, Label, Logo } from '../components/ui';
+import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { cloudConfig } from '../backend/cloud';
+import { CloudSetup } from '../components/CloudSetup';
+import { Button, Logo, Working } from '../components/ui';
 import { api } from '../lib/api';
 import { useSession } from '../store/session';
 import './auth.css';
 
-const ERRORS: Record<string, string> = {
-  'link-expired': 'That sign-in link has expired or was already used. Ask for a new one.',
-  denied: 'Sign-in was cancelled.',
-  state: 'Sign-in took too long. Try again.',
-};
+/** Google "G" mark, drawn inline so the page loads nothing from Google until the user clicks. */
+function GoogleMark() {
+  return (
+    <svg className="auth-g" width="16" height="16" viewBox="0 0 24 24" aria-hidden>
+      <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z" />
+      <path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24z" />
+      <path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1z" />
+      <path fill="#EA4335" d="M12 4.8c1.7 0 3.3.6 4.5 1.8l3.4-3.4A12 12 0 0 0 1.4 6.7l4 3.1c.9-2.8 3.5-5 6.6-5z" />
+    </svg>
+  );
+}
 
 /**
- * Sign in. Hosted mode: Google, GitHub or an email link (4b). Self-hosted: one password (4c).
- * With AUTH=none there is no screen: the visitor goes straight to their boards.
+ * Sign in with Google through the person's own Supabase project, or keep working in this browser.
+ * There is no Specimen server and no password.
  */
 export default function SignIn() {
   const session = useSession((s) => s.session);
-  const load = useSession((s) => s.load);
-  const nav = useNavigate();
   const [params] = useSearchParams();
   const next = params.get('next') || '/boards';
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [pw, setPw] = useState('');
-  const [show, setShow] = useState(false);
-  const [error, setError] = useState(ERRORS[params.get('error') ?? ''] ?? '');
+  const [setup, setSetup] = useState(!cloudConfig());
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (session?.user) nav(session.onboarded ? next : '/onboarding', { replace: true });
-  }, [session, nav, next]);
   if (!session) return null;
+  const signedIn = session.authMode === 'hosted';
 
-  const host = session.authMode === 'hosted' ? location.host : 'self-hosted';
   return (
     <div className="auth">
       <div className="auth-top">
         <Logo size={24} />
-        <span className="mono muted">{host}</span>
+        <span className="mono muted">{location.host}</span>
       </div>
       <main className="auth-card">
-        {session.authMode === 'password' ? (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              try {
-                await api.signInPassword(pw);
-                await load();
-              } catch (err) {
-                setError((err as Error).message);
-              }
-            }}
-          >
-            <h1 className="display">
-              Welcome <em>back</em>
-            </h1>
-            <p className="read muted">This Specimen runs on your own server, in single-user mode.</p>
-            <Field label="Password">
-              <div className="auth-pw">
-                <Input type={show ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} autoFocus autoComplete="current-password" />
-                <button type="button" className="mono" onClick={() => setShow(!show)}>
-                  {show ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </Field>
-            {error && <p className="auth-error">{error}</p>}
-            <Button type="submit" variant="primary" size="lg" className="auth-wide">
-              Unlock
-            </Button>
-            <div className="auth-instance">
-              <Label>This instance</Label>
-              <dl className="mono">
-                <dt>version</dt>
-                <dd>{session.version}</dd>
-                <dt>storage</dt>
-                <dd>{session.dataDir} (local folder)</dd>
-                <dt>auth</dt>
-                <dd>AUTH=password</dd>
-              </dl>
-              <p className="muted">
-                Running alone on your laptop? Set <code>AUTH=none</code> to skip this screen. Forgot it? Reset <code>PASSWORD</code> on the server.
-              </p>
-            </div>
-          </form>
-        ) : sent ? (
-          <div>
-            <h1 className="display">
-              Check your <em>inbox</em>
-            </h1>
-            <p className="read">We sent a link to {email}. It works for 15 minutes.</p>
-            <Button variant="ghost" onClick={() => setSent(false)}>
-              Use another email
-            </Button>
-          </div>
+        <h1 className="display">
+          {signedIn ? 'You are signed in' : <>Keep boards in your <em>Drive</em></>}
+        </h1>
+        <p className="read muted">{signedIn ? `Google account: ${session.user?.email}` : 'Sign in with Google to save boards in your own Google Drive and open them on any device.'}</p>
+        {signedIn ? (
+          <Link to={next} className="ui-btn ui-btn--primary ui-btn--lg auth-wide">
+            Open your boards
+          </Link>
+        ) : setup ? (
+          <CloudSetup onSaved={() => setSetup(false)} />
         ) : (
-          <div>
-            <h1 className="display">
-              Sign in to <em>Specimen</em>
-            </h1>
-            <p className="read muted">New here? The same buttons create your account.</p>
-            <div className="auth-buttons">
-              <a className={`ui-btn ui-btn--secondary ui-btn--lg auth-wide${session.providers.google ? '' : ' is-off'}`} href={session.providers.google ? '/api/auth/oauth/google' : undefined} aria-disabled={!session.providers.google} title={session.providers.google ? undefined : 'Set GOOGLE_CLIENT_ID on the server'}>
-                <span className="auth-g">G</span> Continue with Google
-              </a>
-              <a className={`ui-btn ui-btn--secondary ui-btn--lg auth-wide${session.providers.github ? '' : ' is-off'}`} href={session.providers.github ? '/api/auth/oauth/github' : undefined} aria-disabled={!session.providers.github} title={session.providers.github ? undefined : 'Set GITHUB_CLIENT_ID on the server'}>
-                <GitHubMark /> Continue with GitHub
-              </a>
-            </div>
-            <div className="auth-or mono">OR</div>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
+          <div className="auth-buttons">
+            <Button
+              variant="secondary"
+              size="lg"
+              className="auth-wide"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setError('');
                 try {
-                  await api.signInEmail(email);
-                  setSent(true);
-                  setError('');
-                } catch (err) {
-                  setError((err as Error).message);
+                  await api.signInWithGoogle(`#${next}`);
+                } catch (e) {
+                  setError((e as Error).message);
+                  setBusy(false);
                 }
               }}
             >
-              <Field label="Email">
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" required />
-              </Field>
-              {error && <p className="auth-error">{error}</p>}
-              <Button type="submit" variant="primary" size="lg" className="auth-wide">
-                Email me a sign-in link
-              </Button>
-            </form>
+              {busy ? <Working label="Opening Google" /> : <><GoogleMark /> Continue with Google</>}
+            </Button>
+            <button type="button" className="auth-link mono" onClick={() => setSetup(true)}>
+              Change Supabase project
+            </button>
           </div>
+        )}
+        {error && <p className="auth-error">{error}</p>}
+        {!signedIn && (
+          <>
+            <div className="auth-or mono">or</div>
+            <Link to="/boards" className="ui-btn ui-btn--ghost ui-btn--md auth-wide">
+              Continue without an account
+            </Link>
+          </>
         )}
       </main>
       <p className="auth-foot">
-        <strong>Your files stay in your storage.</strong> Specimen only keeps your sign-in and the list of places you connected.
+        <strong>Your files stay with you.</strong> Without an account, boards live in this browser. With Google, they live in /Specimen in your Drive.
       </p>
     </div>
   );

@@ -431,3 +431,32 @@ textarea.sr-input {
   color: var(--ok);
   font-size: 13.5px;
 }
+
+/* Backup reminder under "This browser". */
+.backup {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: -16px;
+  padding: 10px 14px;
+  border-radius: var(--r-card);
+  font-size: 13px;
+}
+.backup svg {
+  flex: none;
+  margin-top: 2px;
+}
+.backup.is-warn {
+  background: var(--warn-soft);
+  color: var(--ink-2);
+}
+.backup.is-warn svg {
+  color: var(--warn);
+}
+.backup.is-ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.sr-pad {
+  padding: 16px;
+}

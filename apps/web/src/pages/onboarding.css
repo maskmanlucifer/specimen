@@ -260,3 +260,37 @@
     font-size: 40px;
   }
 }
+/* `.ob-main > p` sets the 18px lead size; the note is a small aside, so it matches that specificity. */
+.ob-main > .ob-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-inner);
+  background: var(--warn-soft);
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ob-note svg {
+  flex: none;
+  /* Centre the 14px icon on the first 19.5px line. */
+  margin-top: 3px;
+  color: var(--warn);
+}
+.cloud-setup {
+  display: grid;
+  gap: 14px;
+  max-width: 520px;
+}
+.cloud-setup-help {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.cloud-setup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

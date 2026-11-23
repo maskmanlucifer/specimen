@@ -16,3 +16,19 @@
 .preview .st-bar {
   top: 47px;
 }
+
+/* Share-link page: errors and the small credit line. */
+.shared-error {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 16px;
+  min-height: 100vh;
+  color: var(--muted);
+}
+.shared-foot {
+  padding: 32px 16px 48px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--faint);
+}
