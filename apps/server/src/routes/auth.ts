@@ -60,6 +60,12 @@ export function authRoutes(ctx: Ctx) {
     return c.json(body);
   });
 
+  /** Built-in plugin sources are public (MIT, in the repo). The landing page demo uses them. */
+  app.get('/public/plugins/:id', async (c) => {
+    const p = await ctx.plugins.builtIn(c.req.param('id'));
+    return p ? c.json(p) : c.json({ error: 'Plugin not found' }, 404);
+  });
+
   app.post('/auth/password', async (c) => {
     if (ctx.cfg.auth !== 'password') return c.json({ error: 'Password sign-in is off' }, 400);
     const { password } = await c.req.json<{ password: string }>();

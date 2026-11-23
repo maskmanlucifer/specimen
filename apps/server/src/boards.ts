@@ -87,8 +87,8 @@ export class Boards {
     const b = emptyBoard(title, author);
     b.slug = await this.freeSlug(a, slugify(title));
     const sample = sampleBoards.find((s) => s.slug === template);
-    if (sample) Object.assign(b, { sections: sample.sections, cards: sample.cards, links: sample.links, trail: sample.trail, plugins: sample.plugins, dek: sample.dek });
-    b.log = [{ id: uid('e_'), at: Date.now(), action: 'added', text: `Created board “${title}”` }];
+    if (sample) Object.assign(b, { sections: sample.sections, cards: sample.cards, links: sample.links, trail: sample.trail, plugins: sample.plugins, dek: sample.dek, log: sample.log });
+    b.log = [...b.log, { id: uid('e_'), at: Date.now(), action: 'added', text: `Created board “${title}”` }];
     await this.write(a, b);
     return b;
   }

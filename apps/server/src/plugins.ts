@@ -19,6 +19,11 @@ export class Plugins {
     private readonly boards: Boards,
   ) {}
 
+  /** A built-in plugin only (never a user's own). */
+  builtIn(id: string) {
+    return this.readBuiltIn(id);
+  }
+
   private async readBuiltIn(id: string): Promise<PluginBundle | null> {
     const dir = path.join(this.builtInDir, safePath(id));
     const read = (f: string) => fs.readFile(path.join(dir, f), 'utf8').catch(() => '');
