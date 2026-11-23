@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import { formatTime, uid, type AudioMarker, type CardOf } from '@specimen/schema';
@@ -8,6 +9,17 @@ import { cx } from '../../lib/format';
 import { useBoard } from '../../store/board';
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
+/**
+ * A marker label for the waveform. Regions render in wavesurfer's shadow DOM, where app
+ * CSS does not reach, so the chip carries inline styles.
+ */
+function markerChip(label: string, color: string): HTMLElement {
+  const el = document.createElement('span');
+  el.textContent = label;
+  el.style.cssText = `display:inline-block;margin:4px 0 0 4px;padding:1px 5px;border-radius:3px;background:${color};color:#fff;font:500 10px/1.5 ${cssVar('--font-mono')};white-space:nowrap;pointer-events:none`;
+  return el;
+}
 
 /** Canvas needs real colours, not CSS variables. */
 const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -26,6 +38,7 @@ export function AudioEditor({ card, full = false }: { card: CardOf<'audio'>; ful
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
+  const [ready, setReady] = useState(false);
   const cardRef = useRef(card);
   cardRef.current = card;
 
@@ -55,6 +68,7 @@ export function AudioEditor({ card, full = false }: { card: CardOf<'audio'>; ful
       const loop = cardRef.current.loop;
       if (loop && time >= loop.end) w.setTime(loop.start);
     });
+    w.on('ready', () => setReady(true));
     w.on('play', () => setPlaying(true));
     w.on('pause', () => setPlaying(false));
     w.on('decode', (duration) => {
@@ -64,18 +78,22 @@ export function AudioEditor({ card, full = false }: { card: CardOf<'audio'>; ful
       if (r.id === 'loop') save({ loop: { start: r.start, end: r.end } });
       else save({ markers: cardRef.current.markers.map((m) => (m.id === r.id ? { ...m, t: r.start } : m)) });
     });
-    return () => w.destroy();
+    return () => {
+      setReady(false);
+      w.destroy();
+    };
   }, [card.src, full]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Draw markers and the loop as regions whenever they change.
+  // Draw markers and the loop as regions whenever they change. Regions placed before
+  // the duration is known all land at 0 s, so this waits for `ready`.
   useEffect(() => {
     const r = regions.current;
-    if (!r) return;
+    if (!r || !ready) return;
     r.clearRegions();
     const accent = cssVar('--accent');
-    for (const m of card.markers) r.addRegion({ id: m.id, start: m.t, color: accent, drag: true, content: full ? m.label : undefined });
+    for (const m of card.markers) r.addRegion({ id: m.id, start: m.t, color: accent, drag: true, content: full ? markerChip(m.label, accent) : undefined });
     if (card.loop) r.addRegion({ id: 'loop', start: card.loop.start, end: card.loop.end, color: `color-mix(in srgb, ${cssVar('--hot')} 14%, transparent)`, drag: true, resize: true });
-  }, [card.markers, card.loop, full]);
+  }, [card.markers, card.loop, full, ready]);
 
   const addMarker = useCallback(() => {
     const m: AudioMarker = { id: uid('m'), t: ws.current?.getCurrentTime() ?? 0, label: 'Marker' };
@@ -229,10 +247,11 @@ export function AudioPanel({ card }: { card: CardOf<'audio'> }) {
     <>
       <div className="panel-title">{card.title}</div>
       {!full && <AudioEditor card={card} />}
-      <Button size="sm" icon="external" onClick={() => setFull(true)}>
+      <Button size="sm" icon="external" className="panel-start" onClick={() => setFull(true)}>
         Open editor
       </Button>
-      {full && (
+      {full &&
+        createPortal(
         <div className="aed-overlay" role="dialog" aria-label="Audio editor">
           <div className="aed-overlay-head">
             <div>
@@ -243,8 +262,9 @@ export function AudioPanel({ card }: { card: CardOf<'audio'> }) {
             <Button onClick={() => setFull(false)}>Done</Button>
           </div>
           <AudioEditor card={card} full />
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </>
   );
 }

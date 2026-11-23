@@ -394,8 +394,8 @@
 }
 .aed-overlay {
   position: fixed;
-  inset: 56px 0 0;
-  z-index: 50;
+  inset: 52px 0 0;
+  z-index: 60;
   overflow: auto;
   padding: 32px max(24px, calc((100% - 1100px) / 2));
   background: var(--paper);
