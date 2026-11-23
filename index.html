@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen</title>
+<meta name="description" content="A research board for one topic at a time. Collect notes, audio, papers and figures, connect them, and publish an illustrated explanation. Free, open source, no server.">
+<meta property="og:title" content="Specimen">
+<meta property="og:description" content="Collect what you learn. Publish it as an explanation.">
+<meta property="og:image" content="img/story-light.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="./">Specimen</a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#storage">Your data</a>
+      <a href="https://github.com/maskmanlucifer/specimen">GitHub</a>
+    </nav>
+    <a class="btn btn--primary" href="app/">Open the app</a>
+  </header>
+
+  <section class="hero">
+    <span class="label">Open source · no server · your own storage</span>
+    <h1>Collect what you learn.<br>Publish it as an <em>explanation</em>.</h1>
+    <p class="lead">Specimen is a research board for one topic at a time. Paste notes, links, papers, audio and code onto a canvas, connect what relates, and publish a calm, illustrated page that anyone can read and play with.</p>
+    <div class="actions">
+      <a class="btn btn--primary" href="app/">Start a board, free</a>
+      <a class="btn" href="https://github.com/maskmanlucifer/specimen">View the code</a>
+    </div>
+    <figure class="shot">
+      <picture><source media="(prefers-color-scheme: dark)" srcset="img/board-dark.png"><img src="img/board-light.png" alt="A Specimen board about how Shazam works: sections with audio clips, notes, facts, math, code and two interactive figures." width="1440" height="900"></picture>
+    </figure>
+    <p class="caption">The canvas: sections, cards of every kind, links between them, and live figures.</p>
+  </section>
+
+  <section id="how">
+    <div class="head">
+      <span class="label">How it works</span>
+      <h2>From a messy pile of sources to a page people read</h2>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <span class="num">01 · Collect</span>
+        <h3>Paste or drop anything</h3>
+        <p>Text becomes a note, a link becomes a source card, a file becomes audio, video, an image or a PDF. Record audio in the board and add markers and a transcript.</p>
+      </div>
+      <div class="card">
+        <span class="num">02 · Connect</span>
+        <h3>Arrange the argument</h3>
+        <p>Group cards into sections, draw labelled links between them, mark facts as verified, and add figures that readers can step through.</p>
+      </div>
+      <div class="card">
+        <span class="num">03 · Publish</span>
+        <h3>Share the story</h3>
+        <p>The same board reads as a story, a board and an index. Share a public link, or download a static site to put on any host.</p>
+      </div>
+    </div>
+    <figure class="shot">
+      <picture><source media="(prefers-color-scheme: dark)" srcset="img/story-dark.png"><img src="img/story-light.png" alt="The published story view: title, section rail, audio player with markers, notes and a cited paper." width="1440" height="900"></picture>
+    </figure>
+    <p class="caption">What readers see: private cards and the research log stay out.</p>
+  </section>
+
+  <section id="storage">
+    <div class="head">
+      <span class="label">Your data</span>
+      <h2>No Specimen server. Your boards stay with you.</h2>
+      <p class="lead">Every board is an open folder: <code>board.json</code> and a <code>media/</code> folder. Pick where the folders live.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <span class="pill">No account</span>
+        <h3>This browser</h3>
+        <p>Start in one click. Boards are saved in this browser's storage (IndexedDB).</p>
+        <ul>
+          <li>Works offline; nothing leaves your device.</li>
+          <li>Export one board or everything as a .zip at any time.</li>
+          <li>Data is lost if you clear site data, so keep a backup.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill">Sign in with Google</span>
+        <h3>Your Google Drive</h3>
+        <p>Boards are saved in <code>My Drive/Specimen</code> and open on every device.</p>
+        <ul>
+          <li>Specimen sees only the files it creates (<code>drive.file</code>).</li>
+          <li>Sign-in runs through a Supabase project. You can use ours, or bring your own.</li>
+          <li>Disconnect any time. Your files stay in your Drive.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <span class="label">Open source</span>
+      <h2>Small core, open edges</h2>
+      <p class="lead">MIT licensed. Twelve built-in card types; every interactive figure is a plugin of plain HTML, JS and CSS that runs in a sandbox with no network.</p>
+    </div>
+    <div class="grid2">
+      <figure class="shot" style="margin:0">
+        <img src="img/panel.png" alt="The side panel of an audio card with a waveform, markers and a transcript." width="1440" height="900">
+      </figure>
+      <figure class="shot" style="margin:0">
+        <img src="img/dashboard.png" alt="The dashboard: boards with their card mix, recent activity and where the files live." width="1440" height="900">
+      </figure>
+    </div>
+    <div class="actions" style="margin-top:24px">
+      <a class="btn" href="https://github.com/maskmanlucifer/specimen">Source on GitHub</a>
+      <a class="btn" href="https://github.com/maskmanlucifer/specimen/blob/main/docs/cloud-setup.md">Use your own Supabase</a>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <a href="https://github.com/maskmanlucifer/specimen">GitHub</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <span class="by">Built by <a href="https://github.com/maskmanlucifer"><strong>Maskman Lucifer</strong></a></span>
+  </footer>
+</div>
+</body>
+</html>

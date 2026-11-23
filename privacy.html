@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · Specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="./">Specimen</a>
+    <nav><a href="https://github.com/maskmanlucifer/specimen">GitHub</a></nav>
+    <a class="btn btn--primary" href="app/">Open the app</a>
+  </header>
+
+  <main class="doc">
+    <span class="label">Privacy policy · Updated 24 November 2026</span>
+    <h1>Privacy</h1>
+    <p>Specimen is an open-source web app that runs in your browser. There is no Specimen server and no analytics. This page says what data the app uses, where it is kept, and how to remove it.</p>
+
+    <h2>Without an account</h2>
+    <p>Your boards, media files, plugins and settings are stored in your browser (IndexedDB) on your device. They are not sent anywhere. You can export them as a .zip, and you can delete them in <strong>Settings → Danger zone → Clear this browser</strong>.</p>
+
+    <h2>With Google sign-in</h2>
+    <p>When you choose Google Drive, you sign in with Google through Supabase, a hosted authentication service. The app then uses these Google data:</p>
+    <table>
+      <tr><th>Data</th><th>Why</th><th>Where it is kept</th></tr>
+      <tr><td>Your name, email address and profile picture</td><td>To show who is signed in and to write your name on boards you publish</td><td>Your Supabase account record and your browser</td></tr>
+      <tr><td>Access to Google Drive files that Specimen creates (<code>drive.file</code>)</td><td>To save and open your boards in <code>My Drive/Specimen</code></td><td>Your files stay in your Google Drive</td></tr>
+      <tr><td>A Google refresh token</td><td>So that you stay signed in without a new Google sign-in every hour</td><td>Encrypted (AES-GCM) in a database table that only the server-side token function can read</td></tr>
+    </table>
+    <p>Specimen cannot see your other Drive files, photos or documents. It does not keep a copy of your boards outside your Drive.</p>
+
+    <h2>Published boards</h2>
+    <p>When you publish a share link, the app copies the public parts of the board (no private cards, no research log) to a <code>published</code> folder in your Drive and makes those copies readable by anyone with the link. Unpublish deletes the copies. A static site that you download is a file on your computer; you decide where to put it.</p>
+
+    <h2>Google API data</h2>
+    <p>Specimen's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. Google data is used only to provide the features above. It is not sold, not used for advertising, and not read by people.</p>
+
+    <h2>Remove your data</h2>
+    <ul>
+      <li><strong>Settings → Danger zone → Disconnect Google</strong> revokes the Google token and deletes the stored refresh token.</li>
+      <li>You can also remove access at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+      <li>Your boards in Google Drive stay until you delete the <code>Specimen</code> folder.</li>
+    </ul>
+
+    <h2>Your own Supabase project</h2>
+    <p>If you connect your own Supabase project in Settings, your sign-in and token go to that project, which you control. This policy then covers only the app code.</p>
+
+    <h2>Contact</h2>
+    <p>Questions or requests: open an issue at <a href="https://github.com/maskmanlucifer/specimen/issues">github.com/maskmanlucifer/specimen/issues</a>.</p>
+  </main>
+
+  <footer class="foot">
+    <a href="https://github.com/maskmanlucifer/specimen">GitHub</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <span class="by">Built by <a href="https://github.com/maskmanlucifer"><strong>Maskman Lucifer</strong></a></span>
+  </footer>
+</div>
+</body>
+</html>
