@@ -92,7 +92,7 @@ export default function Landing() {
         </div>
         <div className="ld-demo-frame">
           <StoryEnvContext.Provider value={{ mediaUrl: (p) => p, plugins, theme }}>
-            <Story board={DEMO} tab={tab} onTab={setTab} />
+            <Story board={DEMO} tab={tab} onTab={setTab} rail={false} />
           </StoryEnvContext.Provider>
         </div>
         <p className="ld-caption read">The same board, two views. You edit the canvas; readers get the story.</p>

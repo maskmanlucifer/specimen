@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { buildStory, CARD_LABEL, formatBytes, formatTime, hostOf, type Board, type Card, type CardOf, type Footnote, type StoryBlock } from '@specimen/schema';
 import { FrameFigure, StoryFigure } from './Figure';
 import { Code } from './parts/Code';
@@ -62,6 +62,18 @@ function videoEmbed(src: string): string | null {
   return vm ? `https://player.vimeo.com/video/${vm[1]}` : null;
 }
 
+/** Image that turns into a labelled hatched plate when the file is missing, instead of a broken-image icon. */
+function StoryImage({ src, alt, name }: { src?: string; alt: string; name?: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed)
+    return (
+      <div className="st-image-missing" role="img" aria-label={alt || name}>
+        <span>{name}</span>
+      </div>
+    );
+  return <img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />;
+}
+
 /** One card rendered as editorial prose or an inline element. */
 function Block({ block }: { block: Extract<StoryBlock, { kind: 'card' }> }) {
   const media = useMedia();
@@ -111,7 +123,7 @@ function Block({ block }: { block: Extract<StoryBlock, { kind: 'card' }> }) {
     case 'image':
       return (
         <figure className="st-image">
-          <img src={media(card.src)} alt={card.alt ?? card.caption ?? ''} loading="lazy" />
+          <StoryImage src={media(card.src)} alt={card.alt ?? card.caption ?? ''} name={card.src.split('/').pop()} />
           {card.caption && (
             <figcaption>
               {card.caption}
@@ -238,11 +250,53 @@ function summaryOf(c: Card): string {
   return '';
 }
 
+/** Height of one rail row; the list moves by whole rows so the active one sits in the middle. */
+const RAIL_ROW = 30;
+
+/**
+ * Section rail beside the story (wide screens): follows the reader's scroll, keeps the active
+ * section centred and fades the others by distance. Click a row to jump.
+ */
+function SectionRail({ sections }: { sections: { id: string; n: number; title: string }[] }) {
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    const els = sections.map((s) => document.getElementById(`sec-${s.id}`)).filter((e): e is HTMLElement => !!e);
+    // A section is active while it crosses a band just above the middle of the viewport.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(els.indexOf(e.target as HTMLElement));
+      },
+      { rootMargin: '-38% 0px -58% 0px' },
+    );
+    els.forEach((e) => io.observe(e));
+    return () => io.disconnect();
+  }, [sections]);
+  if (sections.length < 2) return null;
+  return (
+    <nav className="st-rail" aria-label="Sections">
+      <ol style={{ transform: `translateY(${-active * RAIL_ROW}px)` }}>
+        {sections.map((s, i) => {
+          const d = Math.abs(i - active);
+          return (
+            <li key={s.id} style={{ opacity: d === 0 ? 1 : d === 1 ? 0.5 : d === 2 ? 0.26 : 0.1 }} aria-current={d === 0 ? 'true' : undefined}>
+              <button type="button" onClick={() => document.getElementById(`sec-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                <i />
+                <span className="st-rail-n">§ {s.n}</span>
+                {s.title}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
 /**
  * The published story, concept 1c "Editorial Longread": big display type, generous whitespace,
  * figures break out wide on a dark plate. Tabs switch to the board and an index.
  */
-export function Story({ board, tab: tabProp, onTab }: { board: Board; tab?: StoryTab; onTab?: (t: StoryTab) => void }) {
+export function Story({ board, tab: tabProp, onTab, rail = true }: { board: Board; tab?: StoryTab; onTab?: (t: StoryTab) => void; /** Show the section rail. @default true */ rail?: boolean }) {
   const story = useMemo(() => buildStory(board), [board]);
   const [tabState, setTabState] = useState<StoryTab>('story');
   const tab = tabProp ?? tabState;
@@ -269,6 +323,7 @@ export function Story({ board, tab: tabProp, onTab }: { board: Board; tab?: Stor
 
       {tab === 'story' && (
         <>
+          {rail && <SectionRail sections={story.sections.map((s) => ({ id: s.section.id, n: s.n, title: s.section.title }))} />}
           <div className="st-col st-head">
             <Title text={story.title} />
             {story.dek && <p className="st-dek">{story.dek}</p>}
