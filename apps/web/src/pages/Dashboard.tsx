@@ -237,6 +237,26 @@ export default function Dashboard() {
   const shown = (boards ?? []).filter((b) => filter === 'all' || b.visibility === filter);
   const places = new Set((boards ?? []).map((b) => b.storageId)).size;
   const open = (b: BoardSummary) => nav(`/b/${b.storageId}/${b.slug}`);
+  /** Deletes the whole board folder: board.json, media/ and any share-link copies in published/. */
+  const remove = async (e: React.MouseEvent, b: BoardSummary) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const where = storageOf.get(b.storageId)?.name ?? 'its storage';
+    if (!confirm(`Delete “${b.title}”? This deletes the board and all its media from ${where}, and stops its share link. This cannot be undone.`)) return;
+    try {
+      await api.deleteBoard(b.storageId, b.slug);
+      await offline.clear(b.storageId, b.slug);
+      toast(`Deleted “${b.title}”`);
+      await load();
+    } catch (err) {
+      toast((err as Error).message);
+    }
+  };
+  const deleteButton = (b: BoardSummary) => (
+    <button type="button" className="bcard-del" onClick={(e) => remove(e, b)} title="Delete board" aria-label={`Delete ${b.title}`}>
+      <Icon name="trash" size={14} />
+    </button>
+  );
   const boardItems: PaletteItem[] = (boards ?? []).map((b) => ({ id: `board:${b.storageId}/${b.slug}`, label: b.title, icon: 'Board', hint: `${b.cards} cards`, run: () => open(b) }));
   const FILTERS: { value: Filter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -330,7 +350,10 @@ export default function Dashboard() {
                   </span>
                   <SyncStatus storage={storageOf.get(b.storageId)} pending={pendingOf(b)} />
                   <VisibilityPill v={b.visibility} />
-                  <span className="mono muted">{ago(b.updatedAt)}</span>
+                  <span className="dash-row-edited">
+                    <span className="mono muted">{ago(b.updatedAt)}</span>
+                    {deleteButton(b)}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -340,6 +363,7 @@ export default function Dashboard() {
                 <Link key={`${b.storageId}/${b.slug}`} to={`/b/${b.storageId}/${b.slug}`} className="bcard">
                   <div className="bcard-thumb">
                     <BoardThumb thumb={b.thumb} seed={i} />
+                    {deleteButton(b)}
                     <span className="bcard-open mono">
                       Open <Icon name="right" size={12} />
                     </span>

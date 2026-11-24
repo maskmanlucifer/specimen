@@ -213,6 +213,46 @@
   opacity: 1;
   transform: none;
 }
+/* Delete: shown on hover or keyboard focus, so it never sits in the way of opening a board. */
+.bcard-del {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+}
+.bcard-thumb .bcard-del {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.bcard:hover .bcard-del,
+.dash-row:hover .bcard-del,
+.bcard-del:focus-visible {
+  opacity: 1;
+}
+.bcard-del:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+@media (hover: none) {
+  .bcard-del {
+    opacity: 1;
+  }
+}
+.dash-row-edited {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
 .thumb {
   display: block;
   width: 100%;

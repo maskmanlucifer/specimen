@@ -58,6 +58,17 @@ describe('Boards in the browser', () => {
     expect([one, two]).toEqual(['media/moon.png', 'media/moon-2.png']);
   });
 
+  it('deletes a board with its media and published copies, and leaves other boards alone', async () => {
+    const { boards, stores } = setup();
+    const b = await boards.create('local', 'Tides');
+    const other = await boards.create('local', 'Tides');
+    await boards.putMedia('local', b.slug, 'moon.png', new Uint8Array([1]));
+    await stores.local.write(join(b.slug, 'published', 'share.json'), new Uint8Array([1]));
+    await boards.remove('local', b.slug);
+    expect([...stores.local.files.keys()].filter((k) => k.startsWith(`${b.slug}/`))).toEqual([]);
+    expect((await boards.list()).boards.map((x) => x.slug)).toEqual([other.slug]);
+  });
+
   it('moves a board with its media to another storage', async () => {
     const { boards, stores } = setup();
     const b = await boards.create('local', 'Tides');
